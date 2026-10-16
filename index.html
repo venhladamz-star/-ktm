@@ -1,0 +1,3068 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PumpVision · SCADA ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4f6f8;--surface:#ffffff;--surface-soft:#f8fafc;
+  --border:#e8ecf0;--border-strong:#d5dbe3;
+  --text:#0f172a;--text-soft:#475569;--text-mute:#94a3b8;--text-faint:#cbd5e1;
+  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-soft:#eff6ff;
+  --success:#10b981;--success-soft:#ecfdf5;--success-dark:#047857;
+  --warning:#f59e0b;--warning-soft:#fffbeb;
+  --danger:#ef4444;--danger-soft:#fef2f2;--danger-dark:#b91c1c;
+  --info:#06b6d4;--info-soft:#ecfeff;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+  --shadow:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 6px rgba(15,23,42,.05),0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 10px 25px rgba(15,23,42,.08);
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+  --sidebar-w:240px;--topbar-h:68px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit}
+.mono{font-family:'JetBrains Mono','Consolas',monospace}
+
+/* ==================== BOOT LOADER (Uiverse.io by anand_4957) ==================== */
+#boot-loader{position:fixed;inset:0;background:var(--bg);z-index:10000;animation:bootFailsafe 0s linear 6s forwards}
+#boot-loader.done{opacity:0;transition:opacity .45s;pointer-events:none}
+@keyframes bootFailsafe{to{opacity:0;visibility:hidden}}
+/* From Uiverse.io by anand_4957 */
+.loader {
+  position: absolute;
+  top: 50%;
+  margin-left: -50px;
+  left: 50%;
+  animation: speeder 0.4s linear infinite;
+}
+.loader > span {
+  height: 5px;
+  width: 35px;
+  background: #000;
+  position: absolute;
+  top: -19px;
+  left: 60px;
+  border-radius: 2px 10px 1px 0;
+}
+.base span {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-right: 100px solid #000;
+  border-bottom: 6px solid transparent;
+}
+.base span:before {
+  content: "";
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background: #000;
+  position: absolute;
+  right: -110px;
+  top: -16px;
+}
+.base span:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 0 solid transparent;
+  border-right: 55px solid #000;
+  border-bottom: 16px solid transparent;
+  top: -16px;
+  right: -98px;
+}
+.face {
+  position: absolute;
+  height: 12px;
+  width: 20px;
+  background: #000;
+  border-radius: 20px 20px 0 0;
+  transform: rotate(-40deg);
+  right: -125px;
+  top: -15px;
+}
+.face:after {
+  content: "";
+  height: 12px;
+  width: 12px;
+  background: #000;
+  right: 4px;
+  top: 7px;
+  position: absolute;
+  transform: rotate(40deg);
+  transform-origin: 50% 50%;
+  border-radius: 0 0 0 2px;
+}
+.loader > span > span:nth-child(1),
+.loader > span > span:nth-child(2),
+.loader > span > span:nth-child(3),
+.loader > span > span:nth-child(4) {
+  width: 30px;
+  height: 1px;
+  background: #000;
+  position: absolute;
+  animation: fazer1 0.2s linear infinite;
+}
+.loader > span > span:nth-child(2) {
+  top: 3px;
+  animation: fazer2 0.4s linear infinite;
+}
+.loader > span > span:nth-child(3) {
+  top: 1px;
+  animation: fazer3 0.4s linear infinite;
+  animation-delay: -1s;
+}
+.loader > span > span:nth-child(4) {
+  top: 4px;
+  animation: fazer4 1s linear infinite;
+  animation-delay: -1s;
+}
+@keyframes fazer1 {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: -80px;
+    opacity: 0;
+  }
+}
+@keyframes fazer2 {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: -100px;
+    opacity: 0;
+  }
+}
+@keyframes fazer3 {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: -50px;
+    opacity: 0;
+  }
+}
+@keyframes fazer4 {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: -150px;
+    opacity: 0;
+  }
+}
+@keyframes speeder {
+  0% {
+    transform: translate(2px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -3px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-2px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 3px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-1px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-2px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(2px, 1px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
+}
+.longfazers {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.longfazers span {
+  position: absolute;
+  height: 2px;
+  width: 20%;
+  background: #000;
+}
+.longfazers span:nth-child(1) {
+  top: 20%;
+  animation: lf 0.6s linear infinite;
+  animation-delay: -5s;
+}
+.longfazers span:nth-child(2) {
+  top: 40%;
+  animation: lf2 0.8s linear infinite;
+  animation-delay: -1s;
+}
+.longfazers span:nth-child(3) {
+  top: 60%;
+  animation: lf3 0.6s linear infinite;
+}
+.longfazers span:nth-child(4) {
+  top: 80%;
+  animation: lf4 0.5s linear infinite;
+  animation-delay: -3s;
+}
+@keyframes lf {
+  0% {
+    left: 200%;
+  }
+  100% {
+    left: -200%;
+    opacity: 0;
+  }
+}
+@keyframes lf2 {
+  0% {
+    left: 200%;
+  }
+  100% {
+    left: -200%;
+    opacity: 0;
+  }
+}
+@keyframes lf3 {
+  0% {
+    left: 200%;
+  }
+  100% {
+    left: -100%;
+    opacity: 0;
+  }
+}
+@keyframes lf4 {
+  0% {
+    left: 200%;
+  }
+  100% {
+    left: -100%;
+    opacity: 0;
+  }
+}
+
+/* ==================== GLITCH "Loading..." (Uiverse.io by andrew-demchenk0) ==================== */
+/* Đặt dưới figure người đang bay. Lưu ý: color gốc #fff (nền tối) → đổi var(--text)
+   vì overlay nền sáng, #fff sẽ không thấy. */
+.boot-glitch{position:absolute;left:0;right:0;top:calc(50% + 42px);text-align:center}
+/* From Uiverse.io by andrew-demchenk0 */
+.glitch {
+  position: relative;
+  display: inline-block;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  letter-spacing: 5px;
+  z-index: 1;
+  animation: shift 1s ease-in-out infinite alternate;
+}
+
+.glitch:before,
+.glitch:after {
+  display: block;
+  content: attr(data-glitch);
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+.glitch:before {
+  animation: glitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+  color: #8b00ff;
+  z-index: -1;
+}
+
+.glitch:after {
+  animation: glitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+  color: #00e571;
+  z-index: -2;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-3px, 3px);
+  }
+
+  40% {
+    transform: translate(-3px, -3px);
+  }
+
+  60% {
+    transform: translate(3px, 3px);
+  }
+
+  80% {
+    transform: translate(3px, -3px);
+  }
+
+  to {
+    transform: translate(0);
+  }
+}
+
+@keyframes shift {
+  0%, 40%, 44%, 58%, 61%, 65%, 69%, 73%, 100% {
+    transform: skewX(0deg);
+  }
+
+  41% {
+    transform: skewX(10deg);
+  }
+
+  42% {
+    transform: skewX(-10deg);
+  }
+
+  59% {
+    transform: skewX(40deg) skewY(10deg);
+  }
+
+  60% {
+    transform: skewX(-40deg) skewY(-10deg);
+  }
+
+  63% {
+    transform: skewX(10deg) skewY(-5deg);
+  }
+
+  70% {
+    transform: skewX(-50deg) skewY(-20deg);
+  }
+
+  71% {
+    transform: skewX(10deg) skewY(-10deg);
+  }
+}
+
+/* ==================== VAULT TOGGLE (Uiverse.io by Gidarx) ==================== */
+/* Bố cục trong panel "Cơ cấu chấp hành": mỗi toggle 1 slot có caption tên thiết bị */
+.ctrl-row.vault-row{gap:24px;align-items:flex-start;flex-wrap:wrap}
+.vault-slot{display:flex;flex-direction:column;align-items:center;gap:10px}
+.vault-cap{font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+/* Trạng thái khóa: AUTO / E-STOP / failsafe → input disabled + class này */
+.ux-vault-toggle.is-locked{opacity:.55;cursor:not-allowed;filter:grayscale(.35)}
+/* From Uiverse.io by Gidarx */
+.ux-vault-toggle {
+  --color-slate-base: #1e2124;
+  --color-slate-dark: #111315;
+  --color-slate-light: #2c3035;
+  --color-amber: #f59e0b;
+  --color-emerald: #10b981;
+  --color-text-dim: #6b7280;
+  --track-w: 140px;
+  --track-h: 60px;
+  --thumb-size: 50px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ux-vault-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.ux-vault-toggle__wrapper {
+  width: var(--track-w);
+  height: var(--track-h);
+  position: relative;
+  border-radius: 40px;
+  background: var(--color-slate-base);
+  box-shadow:
+    0 0 0 2px var(--color-slate-dark),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+  isolation: isolate;
+}
+
+.ux-vault-toggle__filter {
+  position: absolute;
+  pointer-events: none;
+}
+
+.ux-vault-toggle__track {
+  position: absolute;
+  inset: 2px;
+  border-radius: 38px;
+  background: var(--color-slate-dark);
+  box-shadow:
+    inset 0 8px 16px rgba(0, 0, 0, 0.9),
+    inset 0 3px 6px rgba(0, 0, 0, 0.7),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.ux-vault-toggle__texture {
+  position: absolute;
+  inset: 0;
+  background: var(--color-slate-dark);
+  filter: url(#ux-metal-noise);
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.ux-vault-toggle__circuit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ux-circuit-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 100;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+    stroke 0.6s ease;
+}
+
+.ux-circuit--off {
+  stroke: var(--color-amber);
+  stroke-dashoffset: 0;
+  opacity: 0.4;
+}
+
+.ux-circuit--on {
+  stroke: var(--color-emerald);
+  stroke-dashoffset: 100;
+  opacity: 0.4;
+}
+
+.ux-vault-toggle__status {
+  position: absolute;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 2px;
+  display: flex;
+  z-index: 2;
+}
+
+.ux-vault-toggle__status span {
+  display: inline-block;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease,
+    color 0.4s ease;
+  transition-delay: calc(var(--i) * 0.05s);
+}
+
+.ux-vault-toggle__status--off {
+  right: 24px;
+  color: var(--color-amber);
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.ux-vault-toggle__status--on {
+  left: 24px;
+  color: var(--color-emerald);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.ux-vault-toggle__status--on span {
+  opacity: 0;
+  transform: translateY(15px) scale(0.8);
+  color: var(--color-text-dim);
+}
+
+.ux-vault-toggle__thumb {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    var(--color-slate-light),
+    var(--color-slate-base)
+  );
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+  z-index: 3;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ux-vault-toggle__thumb-ring {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, #3a3f46, #1a1d21);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+.ux-vault-toggle__thumb-core {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--color-slate-dark);
+  border: 2px solid var(--color-amber);
+  box-shadow:
+    inset 0 0 10px rgba(245, 158, 11, 0.3),
+    0 0 15px rgba(245, 158, 11, 0.4);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+.ux-thumb-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-amber);
+  transition:
+    color 0.6s ease,
+    transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.ux-vault-toggle__thumb-glare {
+  position: absolute;
+  top: 2px;
+  left: 10%;
+  width: 80%;
+  height: 40%;
+  border-radius: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  z-index: 4;
+  pointer-events: none;
+}
+
+.ux-vault-toggle__input:checked
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__thumb {
+  transform: translateX(80px);
+}
+
+.ux-vault-toggle__input:checked
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__thumb-core {
+  border-color: var(--color-emerald);
+  box-shadow:
+    inset 0 0 12px rgba(16, 185, 129, 0.4),
+    0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.ux-vault-toggle__input:checked ~ .ux-vault-toggle__wrapper .ux-thumb-icon {
+  color: var(--color-emerald);
+  transform: rotate(180deg) scale(1.1);
+}
+
+.ux-vault-toggle__input:checked ~ .ux-vault-toggle__wrapper .ux-circuit--off {
+  stroke-dashoffset: -100;
+  opacity: 0;
+}
+
+.ux-vault-toggle__input:checked ~ .ux-vault-toggle__wrapper .ux-circuit--on {
+  stroke-dashoffset: 0;
+  opacity: 0.8;
+}
+
+.ux-vault-toggle__input:checked
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__status--off
+  span {
+  opacity: 0;
+  transform: translateY(-15px) scale(0.8);
+  color: var(--color-text-dim);
+}
+
+.ux-vault-toggle__input:checked
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__status--on
+  span {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  color: var(--color-emerald);
+}
+
+.ux-vault-toggle:hover .ux-vault-toggle__thumb-core {
+  box-shadow:
+    inset 0 0 15px rgba(245, 158, 11, 0.5),
+    0 0 25px rgba(245, 158, 11, 0.6);
+}
+
+.ux-vault-toggle__input:checked:hover
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__thumb-core {
+  box-shadow:
+    inset 0 0 15px rgba(16, 185, 129, 0.6),
+    0 0 25px rgba(16, 185, 129, 0.7);
+}
+
+.ux-vault-toggle:active .ux-vault-toggle__thumb {
+  transform: scale(0.95);
+}
+
+.ux-vault-toggle__input:checked:active
+  ~ .ux-vault-toggle__wrapper
+  .ux-vault-toggle__thumb {
+  transform: translateX(80px) scale(0.95);
+}
+
+/* ==================== DEVICE PICKER ==================== */
+#picker{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;animation:fadeIn .4s}
+#picker.hidden{display:none !important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:32px;animation:slideUp .5s .05s backwards}
+.brand-logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.35);font-size:26px}
+.brand-text h1{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.brand-text p{font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-top:2px}
+.picker-title{font-size:32px;font-weight:800;color:var(--text);text-align:center;margin-bottom:8px;letter-spacing:-.8px;animation:slideUp .5s .1s backwards}
+.picker-sub{font-size:15px;color:var(--text-soft);text-align:center;margin-bottom:44px;max-width:480px;line-height:1.6;animation:slideUp .5s .15s backwards}
+.picker-cards{display:flex;gap:20px;animation:slideUp .5s .2s backwards}
+.picker-card{width:240px;padding:32px 24px;background:var(--surface);border:2px solid var(--border);border-radius:var(--r-xl);text-align:center;transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.picker-card:hover{border-color:var(--primary);transform:translateY(-6px);box-shadow:0 20px 40px rgba(37,99,235,.15)}
+.picker-icon{width:88px;height:88px;margin:0 auto 20px;border-radius:20px;background:var(--primary-soft);display:grid;place-items:center;color:var(--primary);font-size:44px;transition:all .25s}
+.picker-card:hover .picker-icon{transform:scale(1.05);background:var(--primary);color:#fff}
+.picker-card:active{transform:translateY(-2px) scale(.995)}
+.picker-card h3{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px}
+.picker-card p{font-size:12px;color:var(--text-mute);line-height:1.5}
+.picker-footer{margin-top:44px;font-size:12px;color:var(--text-mute);animation:slideUp .5s .25s backwards;display:flex;align-items:center;gap:8px}
+@media(max-width:640px){.picker-cards{flex-direction:column;width:100%;max-width:320px}.picker-card{width:100%;padding:24px 20px}.picker-icon{width:64px;height:64px;margin-bottom:14px;font-size:32px}.picker-title{font-size:24px}.picker-sub{font-size:13px;margin-bottom:32px}}
+/* User-selected PHONE mode also works when previewed on a laptop browser. */
+body[data-device="phone"] .sidebar{position:fixed;left:0;top:0;width:280px;transform:translateX(-100%);box-shadow:var(--shadow-lg)}
+body[data-device="phone"] .sidebar.open{transform:translateX(0)}
+body[data-device="phone"] .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
+body[data-device="phone"] .sidebar-overlay.show{opacity:1;pointer-events:auto}
+body[data-device="phone"] .menu-toggle{display:flex}
+body[data-device="phone"] .topbar{padding:0 16px;gap:8px}
+
+
+/* ==================== APP LAYOUT ==================== */
+#app{display:none;height:100vh;width:100%}
+#app.ready{display:flex}
+body[data-device="phone"] .content{padding:18px 14px 28px}
+body[data-device="phone"] .page-header h1{font-size:23px}
+body[data-device="phone"] .kpi-grid{grid-template-columns:1fr 1fr;gap:10px}
+body[data-device="phone"] .kpi-card{padding:14px}
+body[data-device="phone"] .kpi-value{font-size:22px}
+body[data-device="phone"] .dash-grid{grid-template-columns:1fr}
+body[data-device="phone"] .stat-grid{grid-template-columns:1fr 1fr}
+body[data-device="phone"] .device-grid{grid-template-columns:1fr}
+body[data-device="phone"] .search-box{display:none}
+@media(max-width:430px){body[data-device="phone"] .kpi-grid{grid-template-columns:1fr 1fr} body[data-device="phone"] .kpi-card{padding:12px} body[data-device="phone"] .kpi-value{font-size:19px}}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;transition:transform .25s;z-index:100}
+.sidebar-brand{padding:22px 24px 26px;display:flex;align-items:center;gap:12px}
+.sidebar-logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 4px 12px rgba(37,99,235,.3);flex-shrink:0}
+.sidebar-brand h1{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px;line-height:1.1}
+.sidebar-brand p{font-size:9px;color:var(--text-mute);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-top:3px}
+.nav{flex:1;padding:8px 12px;overflow-y:auto}
+.nav::-webkit-scrollbar{width:4px}
+.nav::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+.nav-section{font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:1.2px;padding:14px 14px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--r-md);color:var(--text-soft);font-size:14px;font-weight:500;transition:all .15s;margin-bottom:2px;cursor:pointer;user-select:none;position:relative}
+.nav-item:hover{background:var(--surface-soft);color:var(--text)}
+.nav-item.active{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--primary);border-radius:0 3px 3px 0}
+.nav-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--r-pill);min-width:22px;text-align:center}
+.nav-badge:empty{display:none}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.sound-card{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--r-md);padding:16px;color:#fff;cursor:pointer;transition:transform .2s}
+.sound-card:hover{transform:translateY(-2px)}
+.sound-card .up-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.2);display:grid;place-items:center;margin-bottom:10px;font-size:16px}
+.sound-card h4{font-size:13px;font-weight:700;margin-bottom:2px}
+.sound-card p{font-size:11px;opacity:.85;line-height:1.4}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:var(--topbar-h);flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px}
+.menu-toggle{display:none;width:40px;height:40px;border-radius:var(--r-sm);color:var(--text-soft);align-items:center;justify-content:center;font-size:20px}
+.menu-toggle:hover{background:var(--surface-soft)}
+.search-box{flex:1;max-width:420px;position:relative}
+.search-box::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none}
+.search-box input{width:100%;height:42px;padding:0 16px 0 42px;background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--r-pill);font-size:13px;color:var(--text);outline:none;transition:all .15s}
+.search-box input::placeholder{color:var(--text-mute)}
+.search-box input:focus{background:#fff;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--text-soft);position:relative;transition:background .15s;font-size:18px}
+.icon-btn:hover{background:var(--surface-soft)}
+.icon-btn .dot-badge{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff}
+.conn-pill{display:flex;align-items:center;gap:6px;padding:0 14px;height:40px;border-radius:var(--r-pill);background:var(--surface-soft);font-size:12px;font-weight:600;color:var(--text-soft);border:1px solid var(--border)}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#3b82f6);display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;margin-left:8px;cursor:pointer;border:2px solid #fff;box-shadow:var(--shadow)}
+
+.content{flex:1;overflow-y:auto;padding:28px 32px 40px;background:var(--bg)}
+.content::-webkit-scrollbar{width:8px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+.content::-webkit-scrollbar-thumb:hover{background:var(--text-mute)}
+
+.view{display:none}
+.view.active{display:block;animation:viewIn .3s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.page-header h1{font-size:32px;font-weight:800;color:var(--text);letter-spacing:-.8px;line-height:1.15}
+.page-header p{font-size:15px;color:var(--text-soft);margin-top:6px}
+.page-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap;border:1px solid transparent;color:var(--text)}
+.btn-ghost{background:var(--surface);color:var(--text-soft);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-soft);border-color:var(--border-strong);color:var(--text)}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.25)}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:0 6px 16px rgba(37,99,235,.35);transform:translateY(-1px)}
+.btn-sm{padding:7px 12px;font-size:12px}
+
+/* ==================== CARDS ==================== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;min-width:0}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.card-subtitle{font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-top:4px}
+.card-legend{display:flex;gap:16px;font-size:12px;color:var(--text-soft);align-items:center}
+.legend-item{display:flex;align-items:center;gap:6px;font-weight:500}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* ==================== KPI GRID ==================== */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:all .2s}
+.kpi-card:hover{box-shadow:var(--shadow-md);border-color:var(--border-strong);transform:translateY(-2px)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.kpi-icon{width:44px;height:44px;border-radius:var(--r-md);display:grid;place-items:center;flex-shrink:0;font-size:22px}
+.kpi-icon.blue{background:var(--primary-soft);color:var(--primary)}
+.kpi-icon.green{background:var(--success-soft);color:var(--success)}
+.kpi-icon.orange{background:var(--warning-soft);color:var(--warning)}
+.kpi-icon.red{background:var(--danger-soft);color:var(--danger)}
+.kpi-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700}
+.kpi-badge.up{background:var(--success-soft);color:var(--success-dark)}
+.kpi-badge.down{background:var(--danger-soft);color:var(--danger-dark)}
+.kpi-badge.neutral{background:var(--primary-soft);color:var(--primary)}
+.kpi-badge.gray{background:var(--surface-soft);color:var(--text-soft)}
+.kpi-label{font-size:12px;color:var(--text-mute);font-weight:500;letter-spacing:.2px;margin-bottom:8px}
+.kpi-value{font-size:32px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1.1;display:flex;align-items:baseline;gap:6px;font-family:'JetBrains Mono',monospace}
+.kpi-unit{font-size:14px;font-weight:500;color:var(--text-mute)}
+.kpi-value.green{color:var(--success)}
+.kpi-value.orange{color:var(--warning)}
+.kpi-value.red{color:var(--danger)}
+.kpi-value.blue{color:var(--primary)}
+.kpi-value.off{color:var(--text-mute);font-size:24px;font-weight:700}
+.kpi-bar{height:6px;background:var(--surface-soft);border-radius:var(--r-pill);margin-top:14px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:var(--r-pill);transition:width .6s cubic-bezier(.4,0,.2,1),background .3s;background:var(--primary)}
+.kpi-bar-fill.green{background:linear-gradient(90deg,#34d399,var(--success))}
+.kpi-bar-fill.orange{background:linear-gradient(90deg,#fbbf24,var(--warning))}
+.kpi-bar-fill.red{background:linear-gradient(90deg,#f87171,var(--danger))}
+
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+.chart-wrap{position:relative;height:320px;display:flex;flex-direction:column;gap:6px}.chart-wrap .lane{position:relative;flex:1;min-height:0}
+.chart-wrap.tall{height:400px}
+
+.status-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.status-item{background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;display:flex;align-items:center;gap:12px}
+.status-led{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--text-mute);transition:all .3s}
+.status-led.on{background:var(--success);box-shadow:0 0 0 4px var(--success-soft)}
+.status-led.off{background:var(--text-mute)}
+.status-led.warn{background:var(--warning);box-shadow:0 0 0 4px var(--warning-soft)}
+.status-led.err{background:var(--danger);box-shadow:0 0 0 4px var(--danger-soft);animation:pulseDot 1.5s infinite}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 4px var(--danger-soft)}50%{box-shadow:0 0 0 8px transparent}}
+.status-meta .lbl{font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.status-meta .val{font-size:13px;font-weight:700;color:var(--text);margin-top:2px}
+
+/* ==================== EVENT LIST ==================== */
+.event-list{display:flex;flex-direction:column;gap:12px}
+.event-card{display:flex;gap:16px;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);transition:all .15s;position:relative;overflow:hidden;align-items:flex-start}
+.event-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
+.event-card:hover{background:var(--surface-soft);transform:translateX(2px)}
+.event-card.critical::before{background:var(--danger)}
+.event-card.warning::before{background:var(--warning)}
+.event-card.info::before{background:var(--primary)}
+.event-icon{width:44px;height:44px;border-radius:var(--r-md);display:grid;place-items:center;flex-shrink:0;font-size:20px}
+.event-icon.critical{background:var(--danger-soft);color:var(--danger)}
+.event-icon.warning{background:var(--warning-soft);color:var(--warning)}
+.event-icon.info{background:var(--primary-soft);color:var(--primary)}
+.event-icon.success{background:var(--success-soft);color:var(--success)}
+.event-body{flex:1;min-width:0}
+.event-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event-desc{font-size:12px;color:var(--text-soft);line-height:1.5}
+.event-time{font-size:11px;color:var(--text-mute);font-weight:500;flex-shrink:0;white-space:nowrap}
+
+/* ==================== ASSET LIST ==================== */
+.asset-list{display:flex;flex-direction:column;gap:18px}
+.asset-item{display:flex;flex-direction:column;gap:8px}
+.asset-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.asset-name{font-size:13px;font-weight:600;color:var(--text)}
+.asset-value{font-size:13px;font-weight:700;color:var(--primary);font-family:'JetBrains Mono',monospace}
+.asset-value.danger{color:var(--danger)}
+.asset-value.green{color:var(--success)}
+.asset-bar{height:8px;background:var(--surface-soft);border-radius:var(--r-pill);overflow:hidden}
+.asset-bar-fill{height:100%;border-radius:var(--r-pill);background:linear-gradient(90deg,#60a5fa,var(--primary));transition:width .6s cubic-bezier(.4,0,.2,1)}
+.asset-bar-fill.danger{background:linear-gradient(90deg,#f87171,var(--danger))}
+.asset-bar-fill.green{background:linear-gradient(90deg,#34d399,var(--success))}
+.asset-bar-fill.warning{background:linear-gradient(90deg,#fbbf24,var(--warning))}
+
+/* ==================== TABLE ==================== */
+.table-wrap{overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--surface-soft);position:sticky;top:0;z-index:5}
+th{text-align:left;padding:14px 16px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-mute);font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text)}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--surface-soft)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ==================== FILTERS ==================== */
+.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.input,.select{height:42px;padding:0 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text);font-size:13px;outline:none;transition:all .15s}
+.input:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.input::placeholder{color:var(--text-mute)}
+.input-icon-wrap{position:relative;flex:1;min-width:220px}
+.input-icon-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none}
+.input-icon-wrap .input{padding-left:42px;width:100%}
+
+/* ==================== SEVERITY PILLS ==================== */
+.sev-pill{display:inline-block;padding:4px 10px;border-radius:var(--r-pill);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.sev-pill.critical{background:var(--danger-soft);color:var(--danger-dark)}
+.sev-pill.high{background:var(--warning-soft);color:#92400e}
+.sev-pill.info{background:var(--primary-soft);color:var(--primary-dark)}
+.sev-pill.ok{background:var(--success-soft);color:var(--success-dark)}
+.sev-pill.off{background:var(--surface-soft);color:var(--text-mute)}
+
+/* ==================== STAT BLOCKS ==================== */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px}
+.stat-label{font-size:11px;color:var(--text-mute);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px}
+.stat-value{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.5px;font-family:'JetBrains Mono',monospace}
+.stat-sub{font-size:11px;color:var(--text-mute);margin-top:6px}
+
+/* ==================== DEVICE GRID ==================== */
+.device-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.control-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.control-panel{background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--r-md);padding:14px}
+.control-panel h4{font-size:12px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.ctrl-row{display:flex;gap:8px;flex-wrap:wrap}
+ .ctrl-btn{flex:1;min-width:110px}
+.ctrl-btn.is-active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,.22)}
+.ctrl-btn.is-locked{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}
+.ctrl-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.cmd-state{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-soft);line-height:1.6;white-space:pre-line}
+.device-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:all .2s}
+.device-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.device-head{display:flex;align-items:center;gap:12px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.device-icon-box{width:44px;height:44px;border-radius:var(--r-md);background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;flex-shrink:0;font-size:22px}
+.device-name{font-size:14px;font-weight:700;color:var(--text)}
+.device-id{font-size:11px;color:var(--text-mute);font-family:'JetBrains Mono',monospace;margin-top:3px}
+.device-rows{display:flex;flex-direction:column;gap:10px}
+.device-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0}
+.device-row .k{color:var(--text-mute);font-weight:500}
+.device-row .v{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-mute)}
+.empty-state .icon-wrap{width:72px;height:72px;border-radius:50%;background:var(--surface-soft);margin:0 auto 16px;display:grid;place-items:center;font-size:32px;color:var(--text-faint)}
+.empty-state strong{color:var(--text-soft);display:block;margin-bottom:4px;font-size:15px}
+
+/* ==================== TOAST ==================== */
+#toast{position:fixed;top:20px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:380px}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-lg);display:flex;gap:12px;align-items:flex-start;transform:translateX(120%);transition:transform .35s cubic-bezier(.4,0,.2,1);pointer-events:auto;min-width:300px}
+.toast.show{transform:translateX(0)}
+.toast-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:16px}
+.toast.critical .toast-icon{background:var(--danger-soft);color:var(--danger)}
+.toast.warning .toast-icon{background:var(--warning-soft);color:var(--warning)}
+.toast.success .toast-icon{background:var(--success-soft);color:var(--success)}
+.toast.info .toast-icon{background:var(--primary-soft);color:var(--primary)}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.toast-msg{font-size:12px;color:var(--text-soft);line-height:1.5}
+/* ==================== PASSWORD MODAL ==================== */#pw-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9500;padding:16px}#pw-overlay.show{display:flex}#pw-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:100%;max-width:340px;padding:24px 22px;animation:slideUp .25s .05s backwards}.pw-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}.pw-sub{font-size:12px;color:var(--text-mute);line-height:1.55;margin-bottom:14px}#pw-input{width:100%;height:46px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-soft);padding:0 12px;font-size:22px;letter-spacing:8px;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text);outline:none}#pw-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}#pw-err{min-height:17px;font-size:12px;font-weight:600;color:var(--danger);margin-top:8px}.pw-actions{display:flex;gap:10px;margin-top:10px}.pw-actions .btn{flex:1;justify-content:center}
+/* ==================== SIDEBAR OVERLAY ==================== */
+.sidebar-overlay{display:none}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;width:280px;transform:translateX(-100%);box-shadow:var(--shadow-lg)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto}
+  .menu-toggle{display:flex}
+  .topbar{padding:0 16px;gap:8px}
+  .search-box{max-width:none}
+  .search-box input{height:38px;font-size:12px}
+  .content{padding:20px 16px 32px}
+  .page-header h1{font-size:24px}
+  .page-header p{font-size:13px}
+  .page-actions{width:100%}
+  .page-actions .btn{flex:1;justify-content:center}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .kpi-card{padding:16px}
+  .kpi-value{font-size:24px}
+  .kpi-icon{width:36px;height:36px;font-size:18px}
+  .kpi-label{font-size:11px}
+  .card{padding:18px}
+  .card-title{font-size:15px}
+  .chart-wrap{height:260px}
+  .chart-wrap.tall{height:300px}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .device-grid{grid-template-columns:1fr}
+  .status-list{grid-template-columns:1fr}
+  .hide-mobile{display:none !important}
+  .event-card{padding:14px;gap:12px}
+  .event-icon{width:38px;height:38px;font-size:18px}
+  .event-title{font-size:13px;white-space:normal}
+  #toast{left:16px;right:16px;max-width:none}
+  .toast{min-width:0}
+}
+@media(max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .device-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:420px){
+  .kpi-grid{grid-template-columns:1fr}
+}
+/* Panel "Điều khiển từ xa" xếp dọc khi màn hình hẹp: vault toggle cố định 140px
+   không vừa 2 cột (panel nội bộ chỉ ~120-137px ở 375-420px → tràn). */
+@media(max-width:430px){
+  .control-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== BOOT LOADER (Uiverse.io by anand_4957) ==================== -->
+<div id="boot-loader" aria-busy="true" aria-label="Đang tải ứng dụng">
+  <div class="loader">
+    <span><span></span><span></span><span></span><span></span></span>
+    <div class="base">
+      <span></span>
+      <div class="face"></div>
+    </div>
+  </div>
+  <div class="longfazers">
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <div class="boot-glitch">
+    <div data-glitch="Loading..." class="glitch">Loading...</div>
+  </div>
+</div>
+<script>
+/* Boot loader: hiện đúng 3s rồi fade + gỡ khỏi DOM.
+   CSS failsafe 6s dự phòng nếu JS lỗi. */
+(function () {
+  var el = document.getElementById('boot-loader');
+  if (!el) return;
+  setTimeout(function () {
+    el.classList.add('done');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 500);
+  }, 3000);
+})();
+</script>
+
+<!-- ==================== DEVICE PICKER ==================== -->
+<div id="picker">
+  <div class="brand">
+    <div class="brand-logo">⚡</div>
+    <div class="brand-text">
+      <h1>PumpVision</h1>
+      <p>SCADA · ERP</p>
+    </div>
+  </div>
+  <h2 class="picker-title">Chào mừng trở lại 👋</h2>
+  <p class="picker-sub">Chọn thiết bị bạn đang sử dụng để chúng tôi tối ưu giao diện phù hợp nhất với màn hình của bạn.</p>
+  <div class="picker-cards">
+    <div class="picker-card" data-device="laptop">
+      <div class="picker-icon">💻</div>
+      <h3>Laptop / Desktop</h3>
+      <p>Giao diện đầy đủ, sidebar cố định, biểu đồ lớn</p>
+    </div>
+    <div class="picker-card" data-device="phone">
+      <div class="picker-icon">📱</div>
+      <h3>Điện thoại</h3>
+      <p>Tối ưu cho màn hình nhỏ, sidebar dạng ngăn kéo</p>
+    </div>
+  </div>
+  <div class="picker-footer">ℹ️ Bạn có thể đổi thiết bị bất cứ lúc nào trong Cài đặt</div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app">
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">⚡</div>
+      <div>
+        <h1>PumpVision</h1>
+        <p>SCADA · ERP</p>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">Tổng quan</div>
+      <div class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" data-view="monitoring">
+        <span class="nav-icon">📈</span> Giám sát
+      </div>
+
+      <div class="nav-section">Vận hành</div>
+      <div class="nav-item" data-view="alarms">
+        <span class="nav-icon">🔔</span> Cảnh báo
+        <span class="nav-badge" id="nav-alarm-badge"></span>
+      </div>
+      <div class="nav-item" data-view="devices">
+        <span class="nav-icon">🔌</span> Thiết bị
+      </div>
+
+      <div class="nav-section">Quản trị</div>
+      <div class="nav-item" data-view="reports">
+        <span class="nav-icon">📄</span> Báo cáo
+      </div>
+      <div class="nav-item" data-view="settings">
+        <span class="nav-icon">⚙️</span> Cài đặt
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sound-card" onclick="enableSound()">
+        <div class="up-icon">🔊</div>
+        <h4 id="sound-title">Bật âm thanh</h4>
+        <p id="sound-desc">Nghe bíp khi có cảnh báo khẩn cấp</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle">☰</button>
+
+      <div class="search-box">
+        <input type="text" placeholder="Tìm kiếm cảnh báo, thiết bị..." id="global-search">
+      </div>
+
+      <div class="topbar-right">
+        <div class="conn-pill">
+          <span class="status-led" id="topbar-led"></span>
+          <span id="topbar-conn-text">Đang kết nối</span>
+        </div>
+
+        <button class="icon-btn" title="Thông báo" onclick="markAlarmsRead(); navigate('alarms')">
+          🔔
+          <span class="dot-badge" id="bell-dot" style="display:none"></span>
+        </button>
+        <button class="icon-btn" title="Trợ giúp">❓</button>
+        <div class="user-avatar" title="Quản trị viên">A</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD ============ -->
+      <section id="view-dashboard" class="view active">
+        <div class="page-header">
+          <div>
+            <h1>System Overview</h1>
+            <p>Dữ liệu thời gian thực từ hệ thống giám sát môi trường &amp; dập lửa.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="exportCSV('history')">📥 Export Data</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon blue">🌡️</div>
+              <span class="kpi-badge gray" id="kpi-t-badge">Live</span>
+            </div>
+            <div class="kpi-label">Nhiệt độ</div>
+            <div class="kpi-value green" id="kpi-t-val">--.-<span class="kpi-unit">°C</span></div>
+            <div class="kpi-bar"><div class="kpi-bar-fill green" id="kpi-t-bar" style="width:0%"></div></div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon green">💧</div>
+              <span class="kpi-badge gray" id="kpi-h-badge">0 - 100%</span>
+            </div>
+            <div class="kpi-label">Độ ẩm</div>
+            <div class="kpi-value blue" id="kpi-h-val">--.-<span class="kpi-unit">%</span></div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-h-bar" style="width:0%"></div></div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon blue">🌀</div>
+              <span class="kpi-badge gray" id="kpi-fan-badge">CH2 · 0x0001</span>
+            </div>
+            <div class="kpi-label">Quạt 12V</div>
+            <div class="kpi-value off" id="kpi-fan-val">OFF</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-fan-bar" style="width:0%"></div></div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon red">🚒</div>
+              <span class="kpi-badge gray" id="kpi-pump-badge">CH1 · 0x0000</span>
+            </div>
+            <div class="kpi-label">Bơm dập lửa</div>
+            <div class="kpi-value off" id="kpi-pump-val">OFF</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill red" id="kpi-pump-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Environmental Monitoring Over Time</div>
+                <div class="card-subtitle" id="chart-range">— điểm dữ liệu</div>
+              </div>
+              <div class="card-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Nhiệt độ</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span> Độ ẩm</span>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <div class="lane"><canvas id="chart-live"></canvas></div>
+              <div class="lane"><canvas id="chart-live-h"></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">System Health</div>
+            </div>
+            <div class="status-list">
+              <div class="status-item">
+                <span class="status-led" id="st-rs485"></span>
+                <div class="status-meta"><div class="lbl">RS-485</div><div class="val" id="st-rs485-val">--</div></div>
+              </div>
+              <div class="status-item">
+                <span class="status-led on" id="st-cloud"></span>
+                <div class="status-meta"><div class="lbl">Firebase</div><div class="val" id="st-cloud-val">--</div></div>
+              </div>
+              <div class="status-item">
+                <span class="status-led" id="st-failsafe"></span>
+                <div class="status-meta"><div class="lbl">Failsafe</div><div class="val" id="st-failsafe-val">--</div></div>
+              </div>
+              <div class="status-item">
+                <span class="status-led" id="st-mode"></span>
+                <div class="status-meta"><div class="lbl">Chế độ</div><div class="val" id="st-mode-val">--</div></div>
+              </div>
+            </div>
+            <div class="card-header" style="margin-top:24px;margin-bottom:14px">
+              <div class="card-title" style="font-size:14px">Cảnh báo gần đây</div>
+            </div>
+            <div class="event-list" id="recent-alarms"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Điều khiển từ xa</div>
+              <div class="card-subtitle">ERP → Firebase → HMI → Modbus Relay</div>
+            </div>
+            <span class="kpi-badge gray" id="cmd-status">Sẵn sàng</span>
+          </div>
+          <div class="control-grid">
+            <div class="control-panel">
+              <h4>Chế độ vận hành</h4>
+              <div class="ctrl-row">
+                <button id="ctrl-auto" class="btn btn-primary ctrl-btn" onclick="sendMode('AUTO')">🤖 AUTO</button>
+                <button id="ctrl-manual" class="btn btn-ghost ctrl-btn" onclick="sendMode('MANUAL')">🖐 MANUAL</button>
+              </div>
+            </div>
+            <div class="control-panel">
+              <h4>Cơ cấu chấp hành</h4>
+              <div class="ctrl-row vault-row">
+                <div class="vault-slot">
+                  <label class="ux-vault-toggle">
+                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-fan" aria-label="Bật/tắt quạt" onchange="vaultToggle('fan', this)" />
+                    <div class="ux-vault-toggle__wrapper">
+                      <!-- From Uiverse.io by Gidarx — filter metal-noise: khai báo 1 lần, 2 toggle dùng chung -->
+                      <svg class="ux-vault-toggle__filter" width="0" height="0">
+                        <defs>
+                          <filter id="ux-metal-noise">
+                            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise"></feTurbulence>
+                            <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.12 0" in="noise" result="coloredNoise"></feColorMatrix>
+                            <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="composite"></feComposite>
+                            <feBlend mode="multiply" in="composite" in2="SourceGraphic"></feBlend>
+                          </filter>
+                        </defs>
+                      </svg>
+                      <div class="ux-vault-toggle__track">
+                        <div class="ux-vault-toggle__texture"></div>
+                        <svg class="ux-vault-toggle__circuit" viewBox="0 0 140 60">
+                          <path d="M 35 30 L 60 30 L 75 18 L 115 18" class="ux-circuit-path ux-circuit--off"></path>
+                          <path d="M 25 42 L 65 42 L 80 30 L 105 30" class="ux-circuit-path ux-circuit--on"></path>
+                        </svg>
+                        <div class="ux-vault-toggle__status ux-vault-toggle__status--off">
+                          <span style="--i:1">O</span><span style="--i:2">F</span><span style="--i:3">F</span>
+                        </div>
+                        <div class="ux-vault-toggle__status ux-vault-toggle__status--on">
+                          <span style="--i:1">O</span><span style="--i:2">N</span>
+                        </div>
+                      </div>
+                      <div class="ux-vault-toggle__thumb">
+                        <div class="ux-vault-toggle__thumb-ring"></div>
+                        <div class="ux-vault-toggle__thumb-core">
+                          <svg class="ux-thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <path d="M12 2 L12 5 M12 19 L12 22 M2 12 L5 12 M19 12 L22 12"></path>
+                          </svg>
+                        </div>
+                        <div class="ux-vault-toggle__thumb-glare"></div>
+                      </div>
+                    </div>
+                  </label>
+                  <div class="vault-cap">🌀 Quạt</div>
+                </div>
+                <div class="vault-slot">
+                  <label class="ux-vault-toggle">
+                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-pump" aria-label="Bật/tắt bơm" onchange="vaultToggle('pump', this)" />
+                    <div class="ux-vault-toggle__wrapper">
+                      <!-- filter #ux-metal-noise: dùng chung (khai báo ở toggle Quạt, id toàn cục) -->
+                      <div class="ux-vault-toggle__track">
+                        <div class="ux-vault-toggle__texture"></div>
+                        <svg class="ux-vault-toggle__circuit" viewBox="0 0 140 60">
+                          <path d="M 35 30 L 60 30 L 75 18 L 115 18" class="ux-circuit-path ux-circuit--off"></path>
+                          <path d="M 25 42 L 65 42 L 80 30 L 105 30" class="ux-circuit-path ux-circuit--on"></path>
+                        </svg>
+                        <div class="ux-vault-toggle__status ux-vault-toggle__status--off">
+                          <span style="--i:1">O</span><span style="--i:2">F</span><span style="--i:3">F</span>
+                        </div>
+                        <div class="ux-vault-toggle__status ux-vault-toggle__status--on">
+                          <span style="--i:1">O</span><span style="--i:2">N</span>
+                        </div>
+                      </div>
+                      <div class="ux-vault-toggle__thumb">
+                        <div class="ux-vault-toggle__thumb-ring"></div>
+                        <div class="ux-vault-toggle__thumb-core">
+                          <svg class="ux-thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <path d="M12 2 L12 5 M12 19 L12 22 M2 12 L5 12 M19 12 L22 12"></path>
+                          </svg>
+                        </div>
+                        <div class="ux-vault-toggle__thumb-glare"></div>
+                      </div>
+                    </div>
+                  </label>
+                  <div class="vault-cap">🚒 Bơm</div>
+                </div>
+              </div>
+            </div>
+            <div class="control-panel">
+              <h4>An toàn</h4>
+              <div class="ctrl-row">
+                <button id="ctrl-estop" class="btn btn-ghost ctrl-btn" style="color:var(--danger);border-color:#fecaca" onclick="sendEmergency(true)">⛔ E-STOP</button>
+                <button id="ctrl-clear-estop" class="btn btn-ghost ctrl-btn" onclick="clearEmergency()">✓ Giải phóng</button>
+              </div>
+            </div>
+            <div class="control-panel">
+              <h4>ACK điều khiển</h4>
+              <div class="cmd-state" id="cmd-detail">Chưa có lệnh.</div>
+            </div>
+          </div>
+        </div>
+<div id="pw-overlay" onclick="pwClose()"><div id="pw-modal" onclick="event.stopPropagation()"><div class="pw-title">🔑 Nhập mật khẩu điều khiển</div><p class="pw-sub">Chỉ thao tác trong <b>Điều khiển</b> cần MK. Đúng 1 lần / 60 phút.</p><input id="pw-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')pwSubmit();else if(event.key==='Escape')pwClose()"><div id="pw-err"></div><div class="pw-actions"><button class="btn btn-ghost" onclick="pwClose()">Hủy</button><button class="btn btn-primary" onclick="pwSubmit()">Xác nhận</button></div></div></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Load Distribution by Actuator</div>
+          </div>
+          <div class="asset-list" id="asset-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ MONITORING ============ -->
+      <section id="view-monitoring" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Giám sát</h1>
+            <p>Phân tích chi tiết dữ liệu cảm biến và bảng telemetry.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-ghost" onclick="exportCSV('history')">📥 Xuất CSV</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Biểu đồ chi tiết</div>
+              <div class="card-subtitle" id="mon-chart-range">—</div>
+            </div>
+            <div class="card-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Nhiệt độ</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span> Độ ẩm</span>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <div class="lane"><canvas id="chart-mono"></canvas></div>
+            <div class="lane"><canvas id="chart-mono-h"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Bảng dữ liệu tức thời</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Nhiệt độ</th>
+                  <th>Độ ẩm</th>
+                  <th>Quạt</th>
+                  <th>Bơm</th>
+                  <th class="hide-mobile">Chế độ</th>
+                </tr>
+              </thead>
+              <tbody id="live-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ALARMS ============ -->
+      <section id="view-alarms" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Cảnh báo</h1>
+            <p>Nhật ký sự kiện cháy, mất kết nối RS-485 và các cảnh báo vận hành.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-ghost" onclick="exportCSV('alarms')">📥 Xuất CSV</button>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-block">
+            <div class="stat-label">Tổng cảnh báo</div>
+            <div class="stat-value" id="al-total">0</div>
+            <div class="stat-sub">200 bản ghi gần nhất</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label" style="color:var(--danger-dark)">Cháy (FIRE)</div>
+            <div class="stat-value" style="color:var(--danger)" id="al-fire">0</div>
+            <div class="stat-sub" id="al-fire-sub"></div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label" style="color:#92400e">Mất kết nối</div>
+            <div class="stat-value" style="color:var(--warning)" id="al-comm">0</div>
+            <div class="stat-sub">RS-485 timeout</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Trong 24h</div>
+            <div class="stat-value" id="al-24h">0</div>
+            <div class="stat-sub">Sự kiện gần đây</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Nhật ký cảnh báo</div>
+          </div>
+
+          <div class="filters">
+            <div class="input-icon-wrap">
+              <input class="input" type="text" id="al-search" placeholder="Tìm kiếm nội dung cảnh báo...">
+            </div>
+            <select class="select" id="al-filter-type">
+              <option value="">Tất cả loại</option>
+              <option value="FIRE">🔥 Cháy</option>
+              <option value="COMM_LOSS">📡 Mất kết nối</option>
+              <option value="EMERGENCY">🛑 Khẩn cấp (E-STOP)</option>
+              <option value="ESTOP_RELAY_FAIL">⚠️ Lỗi relay E-STOP</option>
+              <option value="FAN_ACTUATOR_FAIL">🌀 Lỗi cơ cấu quạt</option>
+              <option value="PUMP_ACTUATOR_FAIL">💧 Lỗi cơ cấu bơm</option>
+            </select>
+            <select class="select" id="al-filter-sev">
+              <option value="">Tất cả mức độ</option>
+              <option value="CRITICAL">Nghiêm trọng</option>
+              <option value="HIGH">Cao</option>
+              <option value="INFO">Thông tin</option>
+            </select>
+            <button class="btn btn-ghost" onclick="clearAlarmFilters()">↺ Xoá lọc</button>
+          </div>
+
+          <div class="table-wrap" style="max-height:560px;overflow-y:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:180px">Thời gian</th>
+                  <th style="width:130px">Loại</th>
+                  <th style="width:130px">Mức độ</th>
+                  <th>Nội dung</th>
+                  <th style="width:120px" class="hide-mobile">Nhiệt độ</th>
+                </tr>
+              </thead>
+              <tbody id="alarm-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DEVICES ============ -->
+      <section id="view-devices" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Thiết bị</h1>
+            <p>Danh sách thiết bị cấp trường trên bus Modbus RS-485.</p>
+          </div>
+        </div>
+
+        <div class="device-grid">
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box">🌡️</div>
+              <div>
+                <div class="device-name">SHT20 Sensor</div>
+                <div class="device-id">Slave ID 01 · FC 0x04</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Nhiệt độ</span><span class="v" id="dev-sht-t">--</span></div>
+              <div class="device-row"><span class="k">Độ ẩm</span><span class="v" id="dev-sht-h">--</span></div>
+              <div class="device-row"><span class="k">Register</span><span class="v">0x0001 - 0x0002</span></div>
+              <div class="device-row"><span class="k">Baudrate</span><span class="v">9600 8N1</span></div>
+            </div>
+          </div>
+
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box">🔌</div>
+              <div>
+                <div class="device-name">Relay Module</div>
+                <div class="device-id">Slave ID FF (255) · FC 0x05</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">CH1 (Bơm + Còi)</span><span class="v" id="dev-rly-ch1">OFF</span></div>
+              <div class="device-row"><span class="k">CH2 (Quạt)</span><span class="v" id="dev-rly-ch2">OFF</span></div>
+              <div class="device-row"><span class="k">Coil CH1</span><span class="v">0x0000</span></div>
+              <div class="device-row"><span class="k">Coil CH2</span><span class="v">0x0001</span></div>
+            </div>
+          </div>
+
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box">🖥️</div>
+              <div>
+                <div class="device-name">PC Master / Gateway</div>
+                <div class="device-id">Python SCADA · Edge Node</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Vai trò</span><span class="v">Modbus Master</span></div>
+              <div class="device-row"><span class="k">Protocol</span><span class="v">Modbus RTU</span></div>
+              <div class="device-row"><span class="k">Polling</span><span class="v">1 s/lần</span></div>
+              <div class="device-row"><span class="k">Cloud push</span><span class="v">5 s/lần</span></div>
+            </div>
+          </div>
+
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box">🌀</div>
+              <div>
+                <div class="device-name">Quạt tản nhiệt 12V</div>
+                <div class="device-id">Actuator · từ Relay CH2</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Điện áp</span><span class="v">12 V DC</span></div>
+              <div class="device-row"><span class="k">Ngưỡng ON</span><span class="v" id="dev-fan-on">T ≥ 32.0°C</span></div>
+              <div class="device-row"><span class="k">Ngưỡng OFF</span><span class="v" id="dev-fan-off">T ≤ 30.0°C</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-fan-status">OFF</span></div>
+            </div>
+          </div>
+
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box" style="background:var(--danger-soft);color:var(--danger)">🚒</div>
+              <div>
+                <div class="device-name">Bơm MB370 + Còi báo</div>
+                <div class="device-id">Actuator · từ Relay CH1</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Điện áp</span><span class="v">5 V (LM2596)</span></div>
+              <div class="device-row"><span class="k">Ngưỡng ON</span><span class="v" id="dev-pump-on">T ≥ 50.0°C</span></div>
+              <div class="device-row"><span class="k">Ngưỡng OFF</span><span class="v" id="dev-pump-off">T ≤ 42.0°C</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-pump-status">OFF</span></div>
+            </div>
+          </div>
+
+          <div class="device-card">
+            <div class="device-head">
+              <div class="device-icon-box" style="background:var(--info-soft);color:var(--info)">☁️</div>
+              <div>
+                <div class="device-name">Firebase Realtime DB</div>
+                <div class="device-id">Cloud Backend · Edge Sync</div>
+              </div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Region</span><span class="v">asia-southeast1</span></div>
+              <div class="device-row"><span class="k">Nodes</span><span class="v">/system_status</span></div>
+              <div class="device-row"><span class="k"></span><span class="v">/alarms</span></div>
+              <div class="device-row"><span class="k"></span><span class="v">/history</span></div>
+              <div class="device-row"><span class="k"></span><span class="v">/control · /control_ack</span></div>
+              <div class="device-row"><span class="k"></span><span class="v">/settings</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-cloud-status">--</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section id="view-reports" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Báo cáo</h1>
+            <p>Thống kê vận hành và xuất dữ liệu telemetry / cảnh báo.</p>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-block">
+            <div class="stat-label">Nhiệt độ trung bình</div>
+            <div class="stat-value" id="rp-t-avg">--</div>
+            <div class="stat-sub" id="rp-t-range">--</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Độ ẩm trung bình</div>
+            <div class="stat-value" id="rp-h-avg">--</div>
+            <div class="stat-sub" id="rp-h-range">--</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Thời gian hoạt động</div>
+            <div class="stat-value" id="rp-uptime">00:00</div>
+            <div class="stat-sub">Phiên hiện tại</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Điểm dữ liệu</div>
+            <div class="stat-value" id="rp-points">0</div>
+            <div class="stat-sub">Trong bộ đệm</div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-block">
+            <div class="stat-label">Quạt chạy</div>
+            <div class="stat-value" style="color:var(--primary)" id="rp-fan-time">0%</div>
+            <div class="stat-sub">Tỉ lệ thời gian ON</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Bơm chạy</div>
+            <div class="stat-value" style="color:var(--danger)" id="rp-pump-time">0%</div>
+            <div class="stat-sub">Tỉ lệ thời gian ON</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Nhiệt độ cao nhất</div>
+            <div class="stat-value" style="color:var(--warning)" id="rp-t-max">--</div>
+            <div class="stat-sub">Trong bộ đệm</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Nhiệt độ thấp nhất</div>
+            <div class="stat-value" style="color:var(--success)" id="rp-t-min">--</div>
+            <div class="stat-sub">Trong bộ đệm</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Xuất dữ liệu</div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="exportCSV('history')">📥 CSV · Lịch sử telemetry</button>
+            <button class="btn btn-ghost" onclick="exportCSV('alarms')">📥 CSV · Cảnh báo</button>
+            <button class="btn btn-ghost" onclick="exportJSON()">📥 JSON · Toàn bộ</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SETTINGS ============ -->
+      <section id="view-settings" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Cài đặt</h1>
+            <p>Cấu hình Firebase, ngưỡng điều khiển và thiết bị hiển thị.</p>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Thiết bị hiển thị</div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:16px">
+              <button class="btn btn-ghost" onclick="switchDevice('laptop')" style="flex:1;justify-content:center">💻 Laptop</button>
+              <button class="btn btn-ghost" onclick="switchDevice('phone')" style="flex:1;justify-content:center">📱 Phone</button>
+            </div>
+            <p style="font-size:12px;color:var(--text-mute);line-height:1.6">
+              Đang sử dụng chế độ: <b id="current-device-mode" style="color:var(--text)">Auto</b>
+            </p>
+
+            <div class="card-header" style="margin-top:24px">
+              <div class="card-title">Cấu hình Firebase</div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Database URL</span><span class="v" id="set-url" style="font-size:10px">--</span></div>
+              <div class="device-row"><span class="k">Region</span><span class="v">asia-southeast1</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="set-conn">--</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Ngưỡng điều khiển (AUTO)</div>
+            </div>
+            <div class="device-rows">
+              <div class="device-row"><span class="k">Quạt BẬT</span><span class="v"><input id="set-fan-on" class="input" style="width:110px;height:32px" type="number" step="0.1" value="32.0"> °C</span></div>
+              <div class="device-row"><span class="k">Quạt TẮT</span><span class="v"><input id="set-fan-off" class="input" style="width:110px;height:32px" type="number" step="0.1" value="30.0"> °C</span></div>
+              <div class="device-row"><span class="k">Bơm BẬT</span><span class="v"><input id="set-pump-on" class="input" style="width:110px;height:32px" type="number" step="0.1" value="50.0"> °C</span></div>
+              <div class="device-row"><span class="k">Bơm TẮT</span><span class="v"><input id="set-pump-off" class="input" style="width:110px;height:32px" type="number" step="0.1" value="42.0"> °C</span></div>
+              <div class="device-row"><span class="k">Failsafe timeout</span><span class="v"><input id="set-timeouts" class="input" style="width:110px;height:32px" type="number" min="1" max="1" step="1" value="1" readonly aria-readonly="true" title="Failsafe được khóa ở 1 chu kỳ theo đặc tả an toàn"> chu kỳ</span></div>
+              <div style="margin-top:10px"><button class="btn btn-primary" onclick="saveSettings()">💾 Đồng bộ cấu hình sang HMI</button></div>
+            </div>
+
+            <div class="card-header" style="margin-top:24px">
+              <div class="card-title">Cảnh báo âm thanh</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="enableSound()">🔊 Bật</button>
+              <button class="btn btn-ghost" onclick="testSound()">▶ Test</button>
+            </div>
+            <p style="font-size:11px;color:var(--text-mute);margin-top:10px" id="sound-status">Trạng thái: Chưa bật</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+function $(id) { return document.getElementById(id); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmtTime(d) { if (!(d instanceof Date)) return '—'; return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
+function fmtDT(d) { if (!(d instanceof Date)) return '—'; return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' ' + pad(d.getDate()) + '/' + (d.getMonth()+1); }
+function fmtFull(d) { if (!(d instanceof Date)) return '—'; return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + ' ' + pad(d.getDate()) + '/' + (d.getMonth()+1) + '/' + d.getFullYear(); }
+
+function parseTs(ts) {
+  if (!ts) return null;
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? null : d;
+}
+function timeAgo(d) {
+  if (!d) return '—';
+  var s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+function setText(id, val) { var e = $(id); if (e) e.textContent = val; }
+function setHTML(id, val) { var e = $(id); if (e) e.innerHTML = val; }
+function setClass(id, cls) { var e = $(id); if (e) e.className = cls; }
+function setStyle(id, prop, val) { var e = $(id); if (e) e.style[prop] = val; }
+function escapeHTML(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+/* Ép về số hữu hạn — dữ liệu đến từ Firebase nên không tin được kiểu/giá trị.
+   Lưu ý null/undefined/'' phải là RỚT XUỐNG fallback (Number(null) === 0). */
+function num(v, fallback) {
+  if (v === null || v === undefined || v === '') return fallback;
+  var n = Number(v);
+  return isFinite(n) ? n : fallback;
+}
+/* Lấy chuỗi an toàn khi chèn vào innerHTML (phòng stored XSS qua Firebase). */
+function safe(v, fallback) {
+  if (v == null) return fallback == null ? '' : fallback;
+  return escapeHTML(String(v));
+}
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+/* BUG4: định danh TAB này — lệnh /control và ACK mang client_id theo,
+   hai tab cùng command_sequence không nhận nhầm ACK của nhau. */
+var CLIENT_ID = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+var state = {
+  device: null,
+  current: { t: null, h: null, fan: false, pump: false, mode: '--', comm_ok: false, failsafe: false, emergency_lock: false, heartbeat: 0 },
+  history: [],
+  alarms: [],
+  seenKeys: {},
+  lastUpdate: null,
+  lastHeartbeat: 0,            // M1: heartbeat HMI lần cuối nhận được (đổi → reset age)
+  startTime: Date.now(),
+  soundEnabled: false,
+  firebaseOk: false,
+  db: null,
+  controlAck: null,
+  settings: { fan_on:32, fan_off:30, pump_on:50, pump_off:42, max_timeouts:1 },
+  historySourceReady: false,
+  alarmsBaselineReady: false,   // snapshot đầu tiên của /alarms = baseline, KHÔNG toast
+  ackBaselineReady: false,      // ACK cũ từ phiên trước KHÔNG được báo như lệnh mới
+  lastAckSequence: 0,
+  lastSeenAlarmTs: 0,
+  hasAlarmReadBaseline: false,
+  pendingCmd: null,             // {seq, timer, prev, estop, unsub} — theo dõi ACK cho lệnh đang bay
+  estopUnacked: false,          // H2: E-STOP đã gửi nhưng CHƯA nhận ACK → chặn Clear
+  pendingSettings: null,        // {vals, timer} — vừa lưu /settings, chờ xác nhận
+  activeToastKeys: {}
+};
+try {
+  var savedAlarmTs = localStorage.getItem('pumpvision_last_alarm_ts');
+  if (savedAlarmTs !== null) { state.lastSeenAlarmTs = Number(savedAlarmTs) || 0; state.hasAlarmReadBaseline = true; }
+} catch(e) {}
+var MAX_HISTORY = 300;
+
+try { state.device = localStorage.getItem('pumpvision_device'); } catch(e) {}
+
+/* =====================================================================
+   DEVICE PICKER
+   ===================================================================== */
+function applyDevice(dev) {
+  dev = dev === 'phone' ? 'phone' : 'laptop';
+  document.body.setAttribute('data-device', dev);
+  setText('current-device-mode', dev === 'phone' ? 'Điện thoại' : 'Laptop / Desktop');
+  var p = $('picker'), a = $('app');
+  if (p) p.classList.add('hidden');
+  if (a) a.classList.add('ready');
+}
+
+var pickerCards = document.querySelectorAll('.picker-card');
+for (var pi = 0; pi < pickerCards.length; pi++) {
+  (function(card) {
+    card.addEventListener('click', function() {
+      var dev = card.getAttribute('data-device');
+      if (!dev) return;
+      state.device = dev;
+      try { localStorage.setItem('pumpvision_device', dev); } catch(e) {}
+      applyDevice(dev);
+      showToast('info', '👋 Chào mừng!', 'Đang chạy ở chế độ ' + (dev === 'phone' ? 'điện thoại' : 'laptop') + '.');
+    });
+  })(pickerCards[pi]);
+}
+
+if (state.device) {
+  applyDevice(state.device);
+} else {
+  var pk = $('picker');
+  if (pk) { pk.classList.remove('hidden'); pk.removeAttribute('style'); }
+}
+
+window.switchDevice = function(dev) {
+  state.device = dev === 'phone' ? 'phone' : 'laptop';
+  try { localStorage.setItem('pumpvision_device', state.device); } catch(e) {}
+  applyDevice(state.device);
+  showToast('info', '🔄 Đã đổi thiết bị', 'Chuyển sang ' + (state.device === 'phone' ? 'điện thoại' : 'laptop') + '.');
+};
+
+/* =====================================================================
+   SIDEBAR MOBILE
+   ===================================================================== */
+var menuBtn = $('menu-toggle');
+var sidebar = $('sidebar');
+var overlay = $('overlay');
+if (menuBtn) menuBtn.addEventListener('click', function() {
+  if (sidebar) sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('show');
+});
+if (overlay) overlay.addEventListener('click', function() {
+  if (sidebar) sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+});
+
+/* =====================================================================
+   NAVIGATION
+   ===================================================================== */
+var ROUTES = {
+  dashboard: 'System Overview',
+  monitoring: 'Giám sát',
+  alarms: 'Cảnh báo',
+  devices: 'Thiết bị',
+  reports: 'Báo cáo',
+  settings: 'Cài đặt'
+};
+
+function navigate(view) {
+  var views = document.querySelectorAll('.view');
+  var navs = document.querySelectorAll('.nav-item');
+  for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+  for (var j = 0; j < navs.length; j++) navs[j].classList.remove('active');
+  var t = $('view-' + view);
+  if (t) t.classList.add('active');
+  var n = document.querySelector('[data-view="' + view + '"]');
+  if (n) n.classList.add('active');
+  if (view === 'alarms') markAlarmsRead();
+  try { location.hash = view; } catch(e) {}
+  if (window.innerWidth <= 768) {
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('show');
+  }
+}
+
+var navItems = document.querySelectorAll('.nav-item');
+for (var ni = 0; ni < navItems.length; ni++) {
+  (function(item) {
+    item.addEventListener('click', function() { navigate(item.getAttribute('data-view')); });
+  })(navItems[ni]);
+}
+
+/* =====================================================================
+   CLOCK (không có trong layout này — giữ placeholder)
+   ===================================================================== */
+
+/* =====================================================================
+   CHARTS
+   ===================================================================== */
+var liveT = null, liveH = null, monoT = null, monoH = null;
+
+function makeDs(humid) {
+  var rgb = humid ? '6,182,212' : '16,185,129';
+  return [
+    {
+      label: humid ? 'Độ ẩm (%)' : 'Nhiệt độ (°C)', data: [],
+      borderColor: humid ? '#06b6d4' : '#10b981',
+      backgroundColor: function(ctx) {
+        var area = ctx.chart.chartArea; if (!area) return 'rgba(' + rgb + ',0.1)';
+        var g = ctx.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+        g.addColorStop(0, 'rgba(' + rgb + ',0.10)');
+        g.addColorStop(1, 'rgba(' + rgb + ',0)');
+        return g;
+      },
+      borderWidth: 2.5, tension: 0.4, pointRadius: 0, pointHoverRadius: 5,
+      fill: true, yAxisID: 'y'
+    }
+  ];
+}
+
+function initCharts() {
+  if (typeof Chart === 'undefined') {
+    console.warn('[Chart] Chart.js chưa load — bỏ qua biểu đồ.');
+    return;
+  }
+  // Mỗi đại lượng nằm riêng1 làn (lane) → hai đường không bao giờ đè lên nhau.
+  function opts(humid, showX) {
+    var hex = humid ? '#06b6d4' : '#10b981';
+    return {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a', titleColor: '#fff', bodyColor: '#cbd5e1',
+          borderColor: '#1e293b', borderWidth: 1, padding: 12, cornerRadius: 8
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 8, display: showX },
+          grid: { color: 'rgba(226,232,240,0.5)' }, border: { display: false }
+        },
+        y: {
+          position: 'left',
+          title: { display: true, text: humid ? 'Độ ẩm (%)' : 'Nhiệt độ (°C)', color: hex },
+          ticks: { color: hex, font: { size: 11 } },
+          grid: { color: 'rgba(226,232,240,0.5)' }, border: { display: false }
+        }
+      }
+    };
+  }
+  var lc = $('chart-live');
+  var lch = $('chart-live-h');
+  var mc = $('chart-mono');
+  var mch = $('chart-mono-h');
+  if (lc) liveT = new Chart(lc, { type: 'line', data: { labels: [], datasets: makeDs(false) }, options: opts(false, true) });
+  if (lch) liveH = new Chart(lch, { type: 'line', data: { labels: [], datasets: makeDs(true) }, options: opts(true, false) });
+  if (mc) monoT = new Chart(mc, { type: 'line', data: { labels: [], datasets: makeDs(false) }, options: opts(false, true) });
+  if (mch) monoH = new Chart(mch, { type: 'line', data: { labels: [], datasets: makeDs(true) }, options: opts(true, false) });
+}
+
+// Gói tối đa ~80 điểm hiển thị (lịch sử giữ 300) cho bớt dày, vẫn đủ cửa sổ thời gian.
+function updateCharts(tChart, hChart, history) {
+  var step = Math.max(1, Math.ceil(history.length / 80));
+  var pts = step === 1 ? history : history.filter(function(_, i){ return i % step === 0 || i === history.length - 1; });
+  var labels = pts.map(function(p){ return fmtTime(p.time); });
+  if (tChart) {
+    tChart.data.labels = labels;
+    tChart.data.datasets[0].data = pts.map(function(p){ return p.t; });
+    tChart.update('none');
+  }
+  if (hChart) {
+    hChart.data.labels = labels;
+    hChart.data.datasets[0].data = pts.map(function(p){ return p.h; });
+    hChart.update('none');
+  }
+}
+
+/* =====================================================================
+   RENDER: DASHBOARD
+   ===================================================================== */
+function renderDashboard() {
+  var c = state.current;
+  // Panel điều khiển cần được cập nhật NGAY cả khi chưa có số liệu cảm biến,
+  // nếu không các nút (E-STOP / AUTO / MANUAL) sẽ giữ trạng thái enabled sai.
+  renderControlPanel();
+  // E3: khối LED System Health phải nằm TRƯỚC guard t/h — các LED này không
+  // phụ thuộc số liệu cảm biến; đặt SAU guard thì chúng giữ màu xanh tĩnh
+  // trong HTML cả khi offline / chưa có dữ liệu.
+  var age = state.lastUpdate ? (Date.now() - state.lastUpdate)/1000 : 999;
+  var rs485Ok = state.current.comm_ok !== false && age < 15;
+  setClass('st-rs485', 'status-led ' + (rs485Ok ? 'on' : 'err'));
+  setText('st-rs485-val', rs485Ok ? 'OK' : 'Timeout');
+
+  setClass('st-cloud', 'status-led ' + (state.firebaseOk ? 'on' : 'warn'));
+  setText('st-cloud-val', state.firebaseOk ? 'Trực tuyến' : 'Đang chờ');
+
+  var failsafe = !!state.current.failsafe;
+  setClass('st-failsafe', 'status-led ' + (failsafe ? 'err' : 'off'));
+  setText('st-failsafe-val', failsafe ? 'ACTIVE' : 'Bình thường');
+
+  var mode = c.mode;
+  setClass('st-mode', 'status-led ' + (mode === 'AUTO' ? 'on' : 'warn'));
+  setText('st-mode-val', mode);
+
+  // LƯU Ý: isFinite(null) === true (null → 0) nên PHẢI kiểm tra typeof,
+  // nếu không sẽ lao vào t.toFixed(1) trên null khi Firebase chưa có dữ liệu.
+  if (typeof c.t !== 'number' || !isFinite(c.t)) return;
+  if (typeof c.h !== 'number' || !isFinite(c.h)) return;
+
+  var t = c.t, h = c.h, fan = c.fan, pump = c.pump;
+  var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
+
+  setHTML('kpi-t-val', t.toFixed(1) + '<span class="kpi-unit">°C</span>');
+  var tClass = t >= th.pump_on ? 'red' : t >= th.fan_on ? 'orange' : 'green';
+  setClass('kpi-t-val', 'kpi-value ' + tClass);
+  setClass('kpi-t-bar', 'kpi-bar-fill ' + tClass);
+  setStyle('kpi-t-bar', 'width', Math.min(100, (t/60)*100) + '%');
+
+  var tBadge = $('kpi-t-badge');
+  if (tBadge) {
+    if (t >= th.pump_on) { tBadge.className = 'kpi-badge down'; tBadge.textContent = '⚠ Quá nhiệt'; }
+    else if (t >= th.fan_on) { tBadge.className = 'kpi-badge neutral'; tBadge.textContent = '▲ Cao'; }
+    else { tBadge.className = 'kpi-badge up'; tBadge.textContent = '✓ Bình thường'; }
+  }
+
+  setHTML('kpi-h-val', h.toFixed(1) + '<span class="kpi-unit">%</span>');
+  setStyle('kpi-h-bar', 'width', Math.min(100, h) + '%');
+  setText('kpi-h-badge', h < 30 ? 'Khô' : h > 70 ? 'Ẩm cao' : 'Bình thường');
+
+  setText('kpi-fan-val', fan ? 'ON' : 'OFF');
+  setClass('kpi-fan-val', 'kpi-value ' + (fan ? 'blue' : 'off'));
+  setStyle('kpi-fan-bar', 'width', fan ? '100%' : '0%');
+  setText('kpi-fan-badge', fan ? '● Đang quay' : 'CH2 · 0x0001');
+
+  setText('kpi-pump-val', pump ? 'ON' : 'OFF');
+  setClass('kpi-pump-val', 'kpi-value ' + (pump ? 'red' : 'off'));
+  setStyle('kpi-pump-bar', 'width', pump ? '100%' : '0%');
+  setText('kpi-pump-badge', pump ? '🔥 Đang phun' : 'CH1 · 0x0000');
+
+  updateCharts(liveT, liveH, state.history);
+  setText('chart-range', state.history.length + ' điểm dữ liệu');
+
+  renderAssets();
+}
+
+function renderAssets() {
+  var el = $('asset-list');
+  if (!el) return;
+  var c = state.current;
+  if (c.t === null) return;
+  var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
+  var items = [
+    { name: 'Nhiệt độ (SHT20)', val: c.t.toFixed(1) + ' °C', pct: Math.min(100, (c.t/60)*100),
+      cls: c.t >= th.pump_on ? 'danger' : c.t >= th.fan_on ? 'warning' : 'green' },
+    { name: 'Độ ẩm (SHT20)', val: c.h.toFixed(1) + ' %', pct: Math.min(100, c.h), cls: '' },
+    { name: 'Quạt 12V (CH2)', val: c.fan ? 'Đang chạy' : 'Dừng', pct: c.fan ? 100 : 5, cls: c.fan?'green':'' },
+    { name: 'Bơm MB370 (CH1)', val: c.pump ? 'Đang phun' : 'Dừng', pct: c.pump ? 100 : 5, cls: c.pump?'danger':'' }
+  ];
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    html += '<div class="asset-item">';
+    html += '<div class="asset-head"><span class="asset-name">' + it.name + '</span>';
+    html += '<span class="asset-value ' + (it.cls === 'danger' ? 'danger' : it.cls === 'green' ? 'green' : '') + '">' + it.val + '</span></div>';
+    html += '<div class="asset-bar"><div class="asset-bar-fill ' + it.cls + '" style="width:' + it.pct + '%"></div></div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderRecentAlarms() {
+  var el = $('recent-alarms');
+  if (!el) return;
+  var recent = state.alarms.slice(0, 3);
+  if (!recent.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:24px 0"><div class="icon-wrap" style="width:48px;height:48px;margin-bottom:8px;font-size:22px">✓</div><p style="font-size:12px">Không có cảnh báo nào.</p></div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < recent.length; i++) {
+    var al = recent[i];
+    var sev = al.severity.toLowerCase() === 'critical' ? 'critical' : al.severity.toLowerCase() === 'high' ? 'warning' : 'info';
+    var icon = al.type === 'FIRE' ? '🔥' : al.type === 'COMM_LOSS' ? '📡' : al.type.indexOf('ACTUATOR') >= 0 ? '⚙️' : 'ℹ️';
+    var title = al.type === 'FIRE' ? 'Cảnh báo cháy' : al.type === 'COMM_LOSS' ? 'Mất kết nối RS-485' : al.type.indexOf('ACTUATOR') >= 0 ? 'Lỗi cơ cấu chấp hành' : 'Cảnh báo';
+    html += '<div class="event-card ' + sev + '">';
+    html += '<div class="event-icon ' + sev + '">' + icon + '</div>';
+    html += '<div class="event-body"><div class="event-title">' + escapeHTML(title) + '</div><div class="event-desc">' + escapeHTML(al.message) + '</div></div>';
+    html += '<div class="event-time">' + timeAgo(parseTs(al.timestamp)) + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+/* =====================================================================
+   RENDER: MONITORING
+   ===================================================================== */
+function renderMonitoring() {
+  updateCharts(monoT, monoH, state.history);
+  setText('mon-chart-range', state.history.length + ' điểm dữ liệu');
+  var tbody = $('live-table');
+  if (!tbody) return;
+  var rows = state.history.slice(-30).reverse();
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon-wrap">⏳</div><strong>Chưa có dữ liệu</strong><p>Đang chờ Firebase...</p></div></td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    html += '<tr>';
+    html += '<td class="mono" style="color:var(--text-mute);font-size:12px">' + fmtDT(r.time) + '</td>';
+    html += '<td class="mono" style="font-weight:700">' + num(r.t, 0).toFixed(1) + ' °C</td>';
+    html += '<td class="mono">' + num(r.h, 0).toFixed(1) + ' %</td>';
+    html += '<td><span class="sev-pill ' + (r.fan ? 'ok' : 'off') + '">' + (r.fan ? 'ON' : 'OFF') + '</span></td>';
+    html += '<td><span class="sev-pill ' + (r.pump ? 'critical' : 'off') + '">' + (r.pump ? 'ON' : 'OFF') + '</span></td>';
+    html += '<td class="hide-mobile"><span class="sev-pill ' + (r.mode === 'AUTO' ? 'info' : 'high') + '">' + safe(r.mode, 'AUTO') + '</span></td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+/* =====================================================================
+   RENDER: DEVICES
+   ===================================================================== */
+function renderDevices() {
+  var c = state.current;
+  setText('dev-cloud-status', state.firebaseOk ? 'Online' : 'Offline');
+  // Ngưỡng ĐANG CHẠY lấy từ /settings — 4 ô này trước đây chỉ giữ giá trị hardcode
+  // trong HTML, trong khi HMI chạy bộ ngưỡng khác (ví dụ 30/25 thay vì 32/30).
+  var s = state.settings || {};
+  setText('dev-fan-on',   'T ≥ ' + num(s.fan_on,  32).toFixed(1) + '°C');
+  setText('dev-fan-off',  'T ≤ ' + num(s.fan_off, 30).toFixed(1) + '°C');
+  setText('dev-pump-on',  'T ≥ ' + num(s.pump_on,  50).toFixed(1) + '°C');
+  setText('dev-pump-off', 'T ≤ ' + num(s.pump_off, 42).toFixed(1) + '°C');
+  if (typeof c.t !== 'number' || !isFinite(c.t)) return;
+  if (typeof c.h !== 'number' || !isFinite(c.h)) return;
+  setText('dev-sht-t', c.t.toFixed(1) + ' °C');
+  setText('dev-sht-h', c.h.toFixed(1) + ' %');
+  // CH1 = bơm + còi, CH2 = quạt (khớp Config.COIL_CH1 / COIL_CH2 phía HMI).
+  setText('dev-rly-ch1', c.pump ? 'ON' : 'OFF');
+  setText('dev-rly-ch2', c.fan ? 'ON' : 'OFF');
+  setText('dev-fan-status', c.fan ? 'Đang quay' : 'Đứng yên');
+  setText('dev-pump-status', c.pump ? 'Đang phun' : 'Đứng yên');
+}
+
+/* =====================================================================
+   RENDER: ALARMS
+   ===================================================================== */
+function renderAlarms() {
+  var tbody = $('alarm-table');
+  if (!tbody) return;
+  var search = ($('al-search') ? $('al-search').value : '').toLowerCase().trim();
+  var fType = $('al-filter-type') ? $('al-filter-type').value : '';
+  var fSev = $('al-filter-sev') ? $('al-filter-sev').value : '';
+
+  var list = state.alarms.slice();
+  if (search) list = list.filter(function(a){ return (a.message||'').toLowerCase().indexOf(search) >= 0; });
+  if (fType) list = list.filter(function(a){ return a.type === fType; });
+  if (fSev) list = list.filter(function(a){ return a.severity === fSev; });
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon-wrap">🔍</div><strong>Không có cảnh báo nào</strong><p>Chưa có sự kiện phù hợp với bộ lọc.</p></div></td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var al = list[i];
+    var sevClass = al.severity.toLowerCase();
+    var icon = al.type === 'FIRE' ? '🔥 ' : al.type === 'COMM_LOSS' ? '📡 ' : 'ℹ️ ';
+    html += '<tr>';
+    html += '<td class="mono" style="color:var(--text-mute);font-size:12px">' + fmtFull(parseTs(al.timestamp)) + '</td>';
+    html += '<td>' + icon + '<b style="font-size:12px">' + safe(al.type, 'UNKNOWN') + '</b></td>';
+    html += '<td><span class="sev-pill ' + sevClass + '">' + safe(al.severity, 'INFO') + '</span></td>';
+    html += '<td style="color:var(--text-soft)">' + safe(al.message, '') + '</td>';
+    html += '<td class="mono hide-mobile" style="font-weight:600">' +
+            (al.temperature != null ? num(al.temperature, 0).toFixed(1) + ' °C' : '—') + '</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+/* BUG10: mức độ theo MÃ alarm HMI sinh ra — ternary cũ (FIRE/COMM_LOSS/INFO)
+   đẩy EMERGENCY lẫn PUMP_ACTUATOR_FAIL xuống INFO. */
+function alarmSeverity(type) {
+  switch (type) {
+    case 'FIRE': return 'CRITICAL';
+    case 'EMERGENCY': return 'CRITICAL';
+    case 'COMM_LOSS': return 'HIGH';
+    case 'FAN_ACTUATOR_FAIL': return 'HIGH';
+    case 'PUMP_ACTUATOR_FAIL': return 'HIGH';
+    case 'ESTOP_RELAY_FAIL': return 'CRITICAL';   // relay E-STOP không ngắt được = mất chức năng an toàn
+    default: return 'INFO';
+  }
+}
+
+/* E6: timestamp của alarm — THIẾU/lệch → 0. parseTs() trả new Date() khi
+   thiếu timestamp → badge "chưa đọc" và chấm 🔔 không bao giờ tắt (mọi lần
+   đếm đều là "vừa mới thấy"). */
+function alarmTs(a) {
+  var ts = a ? a.timestamp : null;
+  if (ts == null || ts === '') return 0;
+  var d = parseTs(ts);
+  return d ? d.getTime() : 0;
+}
+
+function renderAlarmStats() {
+  var total = state.alarms.length;
+  var fire = state.alarms.filter(function(a){ return a.type === 'FIRE'; }).length;
+  var comm = state.alarms.filter(function(a){ return a.type === 'COMM_LOSS'; }).length;
+  var now = Date.now();
+  var d24 = state.alarms.filter(function(a){ var ts = alarmTs(a); return ts > 0 && (now - ts) < 86400000; }).length;
+
+  setText('al-total', total);
+  setText('al-fire', fire);
+  setText('al-comm', comm);
+  setText('al-24h', d24);
+  // N6: nhãn theo ngưỡng BÁO CHÁY ĐANG CHẠY (không còn "≥ 50°C" cứng).
+  setText('al-fire-sub', 'Nhiệt độ ≥ ' + (state.settings || {}).pump_on + '°C');
+
+  var badge = $('nav-alarm-badge');
+  var seenTs = Number(state.lastSeenAlarmTs || 0);
+  var unread = 0;
+  for (var k = 0; k < state.alarms.length; k++) {
+    if (alarmTs(state.alarms[k]) > seenTs) unread++;
+  }
+  if (badge) badge.textContent = unread > 0 ? String(unread) : '';
+  var bell = $('bell-dot');
+  if (bell) bell.style.display = unread > 0 ? 'block' : 'none';
+}
+
+function markAlarmsRead() {
+  // R7: MAX timestamp CA danh sach — truoc day lay alarms[0], record thieu ts
+  // sort len dau lam moc da xem khong tang, badge "chua doc" ket.
+  var latestTs = 0;
+  for (var i = 0; i < state.alarms.length; i++) latestTs = Math.max(latestTs, alarmTs(state.alarms[i]));
+  if (!state.alarms.length) latestTs = Date.now();
+  state.lastSeenAlarmTs = Math.max(latestTs || 0, Number(state.lastSeenAlarmTs || 0));
+  try { localStorage.setItem('pumpvision_last_alarm_ts', String(state.lastSeenAlarmTs)); } catch(e) {}
+  renderAlarmStats();
+}
+
+/* =====================================================================
+   RENDER: REPORTS
+   ===================================================================== */
+function renderReports() {
+  var hist = state.history;
+  if (!hist.length) return;
+  var temps = [], hums = [], sumT = 0, sumH = 0;
+  for (var i = 0; i < hist.length; i++) {
+    temps.push(hist[i].t); hums.push(hist[i].h);
+    sumT += hist[i].t; sumH += hist[i].h;
+  }
+  var avgT = sumT / temps.length;
+  var avgH = sumH / hums.length;
+  var minT = Math.min.apply(null, temps);
+  var maxT = Math.max.apply(null, temps);
+  var minH = Math.min.apply(null, hums);
+  var maxH = Math.max.apply(null, hums);
+
+  setText('rp-t-avg', avgT.toFixed(1) + ' °C');
+  setText('rp-h-avg', avgH.toFixed(1) + ' %');
+  setText('rp-t-range', minT.toFixed(1) + ' → ' + maxT.toFixed(1) + ' °C');
+  setText('rp-h-range', minH.toFixed(1) + ' → ' + maxH.toFixed(1) + ' %');
+  setText('rp-points', hist.length);
+  setText('rp-t-max', maxT.toFixed(1) + ' °C');
+  setText('rp-t-min', minT.toFixed(1) + ' °C');
+
+  var fanCount = 0, pumpCount = 0;
+  for (var j = 0; j < hist.length; j++) {
+    if (hist[j].fan) fanCount++;
+    if (hist[j].pump) pumpCount++;
+  }
+  setText('rp-fan-time', Math.round((fanCount / hist.length) * 100) + '%');
+  setText('rp-pump-time', Math.round((pumpCount / hist.length) * 100) + '%');
+
+  var up = Math.floor((Date.now() - state.startTime) / 1000);
+  setText('rp-uptime', pad(Math.floor(up/3600)) + ':' + pad(Math.floor((up%3600)/60)));
+}
+
+/* =====================================================================
+   CONNECTION HEALTH
+   ===================================================================== */
+function updateConnection() {
+  var led = $('topbar-led'), txt = $('topbar-conn-text');
+  if (!led || !txt) return;
+  if (!state.lastUpdate) {
+    led.className = 'status-led ' + (state.firebaseOk ? 'warn' : 'off');
+    txt.textContent = state.firebaseOk ? 'Chờ dữ liệu' : 'Offline';
+    return;
+  }
+  var age = (Date.now() - state.lastUpdate) / 1000;
+  if (age < 15) { led.className = 'status-led on'; txt.textContent = 'Trực tuyến'; }
+  else if (age < 60) { led.className = 'status-led warn'; txt.textContent = 'Trễ dữ liệu'; }
+  else { led.className = 'status-led err'; txt.textContent = 'Mất kết nối'; }
+}
+
+/* =====================================================================
+   TOAST
+   ===================================================================== */
+function showToast(type, title, msg) {
+  var c = $('toast');
+  if (!c) return;
+  var key = [type, title, msg].join('|');
+  if (state.activeToastKeys[key]) return;
+  state.activeToastKeys[key] = true;
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  var icons = { critical: '🔥', warning: '⚠️', success: '✅', info: 'ℹ️' };
+  el.innerHTML = '<div class="toast-icon">' + (icons[type] || 'ℹ️') + '</div>' +
+                 '<div class="toast-body"><div class="toast-title">' + escapeHTML(title) + '</div>' +
+                 '<div class="toast-msg">' + escapeHTML(msg) + '</div></div>';
+  c.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('show'); });
+  setTimeout(function() {
+    el.classList.remove('show');
+    setTimeout(function(){
+      if (el.parentNode) el.parentNode.removeChild(el);
+      delete state.activeToastKeys[key];
+    }, 400);
+  }, 5500);
+}
+
+function toastAlarm(al) {
+  var title = al.type === 'FIRE' ? 'CHÁY — Quá nhiệt' :
+              al.type === 'COMM_LOSS' ? 'Mất kết nối RS-485' : 'Cảnh báo';
+  var type = al.severity === 'CRITICAL' ? 'critical' : al.severity === 'HIGH' ? 'warning' : 'info';
+  showToast(type, title, al.message);
+  if (state.soundEnabled) playBeep(al.severity);
+}
+
+/* =====================================================================
+   SOUND
+   ===================================================================== */
+var audioCtx = null;
+window.enableSound = function() {
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) throw new Error('AudioContext unsupported');
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+    state.soundEnabled = true;
+    setText('sound-status', 'Trạng thái: Đã bật ✓');
+    var s = $('sound-status'); if (s) s.style.color = 'var(--success)';
+    setText('sound-title', '🔊 Đã bật');
+    setText('sound-desc', 'Sẽ bíp khi có cảnh báo');
+    showToast('success', '🔊 Đã bật âm thanh', 'Bạn sẽ nghe tiếng bíp khi có cảnh báo khẩn cấp.');
+  } catch(e) {
+    showToast('warning', 'Không bật được', 'Trình duyệt chặn AudioContext.');
+  }
+};
+
+window.testSound = function() {
+  // E7: lần đầu cũng PHẢI phát thử ngay (click đã là user gesture) —
+  // return sau enableSound() khiến nút Test im lặng, người dùng tưởng hỏng.
+  if (!state.soundEnabled) enableSound();
+  playBeep('CRITICAL');
+};
+
+function playBeep(sev) {
+  if (!audioCtx) return;
+  try {
+    var n = sev === 'CRITICAL' ? 3 : 1;
+    for (var i = 0; i < n; i++) {
+      var t = audioCtx.currentTime + i * 0.28;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = sev === 'CRITICAL' ? 880 : 660;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.start(t); osc.stop(t + 0.25);
+    }
+  } catch(e) {}
+}
+
+/* =====================================================================
+   EXPORT
+   ===================================================================== */
+/* BUG8 (CSV injection): ô CSV bắt đầu bằng = + - @ TAB/CR bị Excel/LibreOffice chấm
+   thành CÔNG THỨC khi mở file. Đánh dấu ' chuẩn OWASP + escape nháy kép;
+   số thuần (-5, 3.14) giữ nguyên → cột nhiệt độ vẫn là số. */
+function csvCell(v) {
+  if (v == null) return '';
+  var s = String(v);
+  if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+window.exportCSV = function(kind) {
+  var csv = '', filename = '';
+  if (kind === 'alarms') {
+    csv = 'Timestamp,Type,Severity,Message,Temperature\n';
+    csv += state.alarms.map(function(a) {
+      return csvCell(a.timestamp) + ',' + csvCell(a.type) + ',' + csvCell(a.severity) + ',' +
+             csvCell(a.message) + ',' + csvCell(a.temperature);
+    }).join('\n');
+    filename = 'alarms_' + Date.now() + '.csv';
+  } else {
+    csv = 'Timestamp,Temperature(C),Humidity(%),Fan,Pump,Mode\n';
+    csv += state.history.map(function(p) {
+      return csvCell(p.time instanceof Date ? p.time.toISOString() : '') + ',' + csvCell(p.t.toFixed(2)) + ',' + csvCell(p.h.toFixed(2)) + ',' +
+             csvCell(p.fan ? 'ON' : 'OFF') + ',' + csvCell(p.pump ? 'ON' : 'OFF') + ',' + csvCell(p.mode);
+    }).join('\n');
+    filename = 'telemetry_' + Date.now() + '.csv';
+  }
+  download(csv, filename, 'text/csv');
+  showToast('success', '📥 Xuất thành công', 'Đã tải ' + filename);
+};
+
+window.exportJSON = function() {
+  var payload = {
+    exported_at: new Date().toISOString(),
+    device: state.device,
+    history: state.history.map(function(p){ return { time: p.time instanceof Date ? p.time.toISOString() : '', t: p.t, h: p.h, fan: p.fan, pump: p.pump, mode: p.mode }; }),
+    alarms: state.alarms
+  };
+  download(JSON.stringify(payload, null, 2), 'scada_export_' + Date.now() + '.json', 'application/json');
+  showToast('success', '📥 Xuất JSON', 'Đã tải file JSON.');
+};
+
+function download(content, filename, mime) {
+  var blob = new Blob([content], { type: mime });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+window.clearAlarmFilters = function() {
+  if ($('al-search')) $('al-search').value = '';
+  if ($('al-filter-type')) $('al-filter-type').value = '';
+  if ($('al-filter-sev')) $('al-filter-sev').value = '';
+  renderAlarms();
+};
+
+/* =====================================================================
+   FIREBASE
+   ===================================================================== */
+var FIREBASE_CONFIG = {
+  // Project Firebase MỚI — môn Điều khiển thông minh (tdhdktm).
+  // GIỮ NGUYÊN 2 key này (không đổi tên) — chỉ đổi giá trị khi đổi project.
+  apiKey: "AIzaSyA451eQVli4_9bAz9zM3nisEQo8yluWb0A",
+  databaseURL: "https://tdhdktm-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+setText('set-url', FIREBASE_CONFIG.databaseURL.split('//')[1]);
+
+function commandSequence() {
+  // C2: seq kiểu MILLISECONDS (~1.7e12) — an toàn với double (max 9e15).
+  // Bản cũ nhân Date.now() với 1e6 (~1.7e18) vượt MAX_SAFE_INTEGER:
+  // old+1 === old → mất đơn điệu, hai lệnh cùng ms ra seq trùng.
+  var old = 0;
+  try { old = Number(localStorage.getItem('pumpvision_cmd_seq') || 0); } catch (e) {}
+  old = Math.max(old, window.__cmdSeqMem || 0);
+  if (!(old < 1e15)) old = 0;                 // bỏ seq cũ ~1e18 còn trong localStorage
+  var seq = Math.max(old + 1, Date.now(), num((state.current || {}).last_command_sequence, 0) + 1);  // vượt seq HMI đã nhận
+  window.__cmdSeqMem = seq;
+  try { localStorage.setItem('pumpvision_cmd_seq', String(seq)); } catch (e) {}
+  return seq;
+}
+
+function renderControlPanel() {
+  var c = state.current || {};
+  var mode = c.mode === 'MANUAL' ? 'MANUAL' : 'AUTO';
+  var locked = !!c.emergency_lock;
+  var autoBtn = $('ctrl-auto'), manualBtn = $('ctrl-manual');
+  var fanTgl = $('vault-fan'), pumpTgl = $('vault-pump');
+  var estopBtn = $('ctrl-estop'), clearBtn = $('ctrl-clear-estop');
+
+  if (autoBtn) { autoBtn.className = 'btn ctrl-btn ' + (mode === 'AUTO' ? 'btn-primary is-active' : 'btn-ghost'); autoBtn.disabled = locked; }
+  if (manualBtn) { manualBtn.className = 'btn ctrl-btn ' + (mode === 'MANUAL' ? 'btn-primary is-active' : 'btn-ghost'); manualBtn.disabled = locked; }
+  /* Vault toggle: checked = ON. render là đường đồng bộ state → UI DUY NHẤT
+     (Firebase /system_status → optimistic → ACK → restore). input disabled khi
+     khóa E-STOP / không phải MANUAL / failsafe (bơm) — native chặn click. */
+  if (fanTgl) { fanTgl.checked = !!c.fan; fanTgl.disabled = locked || mode !== 'MANUAL'; vaultLock(fanTgl); }
+  if (pumpTgl) { pumpTgl.checked = !!c.pump; pumpTgl.disabled = locked || mode !== 'MANUAL' || !!c.failsafe; vaultLock(pumpTgl); }
+  if (estopBtn) { estopBtn.disabled = locked; estopBtn.className = 'btn btn-ghost ctrl-btn' + (locked ? ' is-locked' : ''); }
+  if (clearBtn) { clearBtn.disabled = !locked; clearBtn.className = 'btn ' + (locked ? 'btn-primary' : 'btn-ghost') + ' ctrl-btn'; }
+}
+/* Gắn visual khóa (.is-locked) lên label vault toggle theo input.disabled */
+function vaultLock(input) {
+  var lab = input.closest ? input.closest('.ux-vault-toggle') : input.parentElement;
+  if (lab) lab.classList.toggle('is-locked', !!input.disabled);
+}
+
+/* MK điều khiển (chỉ section Điều khiển): gate nằm trong writeControl — E-STOP đi
+   {urgent:true} nên bỏ qua. Nhập đúng 1 lần lưu 60 phút (localStorage pv_pw_at). */
+var PW_CODE = '0001', PW_TTL_MS = 60 * 60 * 1000, pwRetry = null;
+function pwUnlocked() { try { return Date.now() - Number(localStorage.getItem('pv_pw_at') || 0) < PW_TTL_MS; } catch (e) { return false; } }
+function pwGate(retry) { if (pwUnlocked()) return true; pwRetry = retry; $('pw-input').value = ''; $('pw-err').textContent = ''; $('pw-overlay').classList.add('show'); setTimeout(function () { $('pw-input').focus(); }, 60); return false; }
+function pwClose() { $('pw-overlay').classList.remove('show'); pwRetry = null; }
+function pwSubmit() { if ($('pw-input').value !== PW_CODE) { $('pw-err').textContent = 'Sai mật khẩu — thử lại.'; $('pw-input').focus(); return; } try { localStorage.setItem('pv_pw_at', String(Date.now())); } catch (e) {} var cb = pwRetry; pwClose(); if (cb) cb(); }
+
+var ACK_TIMEOUT_MS = 12000;
+function setStatus(t) { var e = $('cmd-status'); if (e) e.textContent = t; }
+/* Ép trạng thái vừa gửi vào state.current NGAY LẬP TỨC (optimistic update):
+   1) Giao diện phản hồi tức thì thay vì chờ /system_status (1s) — E-STOP hiện
+      lock ngay, nút AUTO/MANUAL đổi màu ngay.
+   2) Quan trọng hơn: lệnh thứ 2 được xây trên trạng thái MỚI. Nếu không, khi
+      bạn bật quạt rồi bấm bơm trong vòng 5s, lệnh bơm sẽ mang fan_cmd=false
+      (giá trị cũ còn đọc trong /system_status) và TẮT NGƯỢC quạt vừa bật. */
+function applyLocalState(p) {
+  if (p.mode_cmd) state.current.mode = p.mode_cmd;
+  state.current.fan = !!p.fan_cmd;
+  state.current.pump = !!p.pump_cmd;
+  // M3: KHÔNG bật khóa ở đây — chỉ applyAckState (sau ACK thật) hoặc
+  // system_status mới đặt trạng thái khóa; nút Clear không bấm được sớm.
+  // E2: render là việc HIỂN THỊ — không được ném lỗi ra đường ra lệnh.
+  try { renderDashboard(); renderDevices(); } catch (e) { console.error('[UI] render:', e); }
+}
+/* Ép trạng thái HMI trả về trong ACK — nguồn dữ liệu xác thực. */
+function applyAckState(v) {
+  var c = state.current;
+  if (v.mode) c.mode = v.mode;
+  if (typeof v.fan_state === 'boolean') c.fan = v.fan_state;
+  if (typeof v.pump_state === 'boolean') c.pump = v.pump_state;
+  if (typeof v.emergency_lock === 'boolean') c.emergency_lock = v.emergency_lock;
+  renderDashboard(); renderDevices();
+}
+/* Optimistic UI PHẢI có bản sao để hoàn tác khi lệnh KHÔNG tới HMI
+   (set() lỗi / timeout ACK) — web không được "tự chém" trạng thái. */
+function snapshotLocalState() {
+  var c = state.current;
+  return { mode: c.mode, fan: c.fan, pump: c.pump, emergency_lock: c.emergency_lock };
+}
+function restoreLocalState(s) {
+  if (!s) return;
+  var c = state.current;
+  c.mode = s.mode; c.fan = s.fan; c.pump = s.pump;
+  c.emergency_lock = s.emergency_lock;
+  renderDashboard(); renderDevices();
+}
+function clearCommandWatch() {
+  if (state.pendingCmd && state.pendingCmd.timer) clearTimeout(state.pendingCmd.timer);
+  if (state.pendingCmd && state.pendingCmd.unsub) { try { state.pendingCmd.unsub(); } catch (e) {} }
+  state.pendingCmd = null;
+}
+/* BUG3: /control_ack chỉ có 1 key — client khác gửi lệnh cùng lúc ghi đè
+   trong lúc mình chờ ACK → mất ACK. Gom xử lý ACK thành hàm dùng chung;
+   listener theo TỪNG seq (control_acks/{seq}) cũng gọi đây. Idempotent:
+   lần gọi thứ hai pendingCmd đã null → chỉ cập nhật lastAckSequence. */
+function handleAck(v) {
+  if (!v) return;
+  var seq = num(v.command_sequence, 0);
+  state.controlAck = v;
+  // BUG4: cùng seq nhưng KHÁC client_id = ACK cho lệnh của tab/client khác.
+  var isMine = !!(state.pendingCmd && seq === state.pendingCmd.seq &&
+                  (!v.client_id || v.client_id === CLIENT_ID));
+  // Snapshot ĐẦU TIÊN khi mở trang = ACK của phiên làm việc trước đó.
+  // Chỉ ghi nhận thứ tự, KHÔNG hiện "ACK · OK" như thể vừa gửi lệnh.
+  if (!state.ackBaselineReady && !isMine) {
+    state.ackBaselineReady = true;
+    if (seq < 1e15) state.lastAckSequence = Math.max(state.lastAckSequence, seq);
+    return;
+  }
+  state.ackBaselineReady = true;
+  if (seq < 1e15 && seq > state.lastAckSequence) state.lastAckSequence = seq;
+
+  // Không phải ACK cho lệnh mình đang chờ (HMI tự thao tác / SEQ cũ / đã timeout).
+  if (!isMine) return;
+
+  clearCommandWatch();
+  state.estopUnacked = false;   // ACK của HMI = E-STOP đã có lời giải thích
+  applyAckState(v);   // áp trạng thái MỚI NHẤT — không phải chờ /system_status 1s
+  setText('cmd-status', v.accepted ? 'ACK · OK' : 'ACK · REJECT');
+  setText('cmd-detail', 'SEQ ' + seq + ' · ' + (v.result||'') + '\n' + (v.message||'') + '\n' + (v.timestamp||''));
+  if (v.accepted) showToast('success','HMI đã ACK',v.message||'Lệnh đã thực thi.');
+  else showToast('warning','HMI từ chối lệnh',v.message||'');
+}
+
+function watchAck(seq, prev, estop) {
+  clearCommandWatch();
+  state.pendingCmd = { seq: seq, timer: null, prev: prev || null, estop: !!estop, unsub: null };
+  // BUG3: listener RIÊNG theo seq — ACK của mình không bị /control_ack bị
+  // client khác ghi đè. Gỡ trong clearCommandWatch (kể cả khi timeout).
+  try {
+    var ackRef = state.db.ref('control_acks/' + seq);
+    var onAck = function(snap) { var v = snap.val(); if (v) handleAck(v); };
+    ackRef.on('value', onAck, function(err) { console.error('[Firebase] Lỗi control_acks:', err); });
+    state.pendingCmd.unsub = function() { ackRef.off('value', onAck); };
+  } catch (e) {}
+}
+
+function startAckTimeout(seq) {
+  if (!state.pendingCmd || state.pendingCmd.seq !== seq) return;
+  state.pendingCmd.timer = setTimeout(function() {
+    if (!state.pendingCmd || state.pendingCmd.seq !== seq) return;
+    var wasEstop = !!state.pendingCmd.estop;
+    var prev = state.pendingCmd.prev;          // bản sao TRƯỚC optimistic update
+    clearCommandWatch();                       // BUG3: gỡ luôn listener theo seq
+    restoreLocalState(prev);                   // lệnh KHÔNG tới HMI → hoàn tác
+    if (wasEstop) {
+      // H2: E-STOP không có ACK = KHÔNG chắc đã kích hoạt — báo rõ và
+      // chặn Clear cho tới khi có ACK hoặc system_status xác nhận khóa.
+      state.estopUnacked = true;
+      setStatus('E-STOP CHƯA XÁC NHẬN');
+      showToast('critical', 'E-STOP chưa xác nhận',
+        'Không nhận được ACK trong ' + (ACK_TIMEOUT_MS / 1000) +
+        's — CHƯA chắc E-STOP đã kích hoạt. Gửi lại E-STOP hoặc chờ HMI xác nhận.');
+      renderDashboard();
+    } else {
+      setStatus('Không có phản hồi');
+      showToast('warning', 'HMI chưa ACK',
+        'Không nhận được xác nhận trong ' + (ACK_TIMEOUT_MS / 1000) +
+        's. Kiểm tra HMI Python có đang chạy và có kết nối Firebase không.');
+    }
+  }, ACK_TIMEOUT_MS);
+}
+
+function writeControl(fields, opts) {
+  opts = opts || {};
+  // N4: offline thì TUYỆT ĐỐI không báo như đã gửi (kể cả E-STOP).
+  if (!state.db || !state.firebaseOk) {
+    showToast('critical', 'Đang offline', 'Lệnh CHƯA được gửi tới HMI.');
+    setStatus('Offline · lệnh CHƯA gửi');
+    return false;
+  }
+  // H2: chỉ một lệnh được chờ ACK — E-STOP (urgent) luôn được phép đi trước.
+  if (state.pendingCmd && !opts.urgent) {
+    showToast('warning', 'Đang chờ ACK', 'Chờ HMI xác nhận lệnh trước.');
+    return false;
+  }
+  if (!opts.urgent && !pwGate(function () { writeControl(fields, opts); })) return false; var c = state.current;
+  var payload = {
+    command_sequence: commandSequence(),
+    mode_cmd: fields.mode_cmd || c.mode || 'AUTO',
+    fan_cmd: typeof fields.fan_cmd === 'boolean' ? fields.fan_cmd : !!c.fan,
+    pump_cmd: typeof fields.pump_cmd === 'boolean' ? fields.pump_cmd : !!c.pump,
+    emergency_cmd: !!fields.emergency_cmd,
+    clear_emergency: !!fields.clear_emergency,
+    issued_at: new Date().toISOString(),
+    issued_at_ms: Date.now(),
+    issued_by: 'ERP-WEB',
+    client_id: CLIENT_ID
+  };
+
+  // Optimistic UI CÓ bản sao để hoàn tác nếu lệnh không tới HMI (BUG3);
+  // L4: E-STOP chen ngang → prev lấy của lệnh ĐANG CHỜ; khóa do applyAckState/system_status (M3).
+  var prevSnap = (state.pendingCmd && state.pendingCmd.prev) || snapshotLocalState();
+  applyLocalState(payload);
+  watchAck(payload.command_sequence, prevSnap, payload.emergency_cmd);
+  startAckTimeout(payload.command_sequence);   // H2: chạy NGAY, không đợi .then
+  setStatus('Đang gửi…  (chờ ACK)');
+
+  // T7: transaction — không bao giờ đè lệnh khác còn chờ ACK (<30s) và
+  // không đè emergency_cmd:true (trừ khi chính nó là Clear/E-STOP).
+  // BUG1: fresh phải có CẶN DƯỚI — issued_at TƯƠNG LAI (đồng hồ lệch) làm
+  // age âm → "tươi mãi", lệnh rác giữ /control → chặn cả Clear E-STOP.
+  // I1+BUG4: ours = cùng client_id (mỗi tab 1 ID ngẫu nhiên, 2 tab khác nhau
+  // không đè nhầm) — lệnh CỦA MÌNH trong /control luôn cho ghi đè, kể cả khi
+  // pendingCmd đã timeout: trước đây lệnh cũ chưa ACK (<30s) của chính tab này
+  // từng khiến retry bị từ chối tới 30s ("Có lệnh khác đang chờ HMI" khó hiểu).
+  state.db.ref('control').transaction(function(cur) {
+    if (cur && typeof cur === 'object') {
+      var curSeq = num(cur.command_sequence, 0);
+      var ours = cur.client_id === CLIENT_ID;
+      var age = Date.now() - num(cur.issued_at_ms, 0);
+      var fresh = age > -5000 && age < 30000;
+      var plausible = curSeq <= Date.now() + 300000;   // seq tương lai >5 phút = rác
+      if (cur.emergency_cmd === true && !payload.emergency_cmd && !payload.clear_emergency) return;
+      if (!payload.emergency_cmd && curSeq > state.lastAckSequence && fresh && plausible && !ours) return;
+    }
+    return payload;
+  }).then(function(res) {
+    if (res && res.committed === false) {
+      setStatus('Lệnh bị từ chối');
+      if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) restoreLocalState(prevSnap);
+      if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) clearCommandWatch();
+      showToast('warning', 'Có lệnh khác đang chờ HMI', 'Không ghi đè — thử lại sau giây lát.');
+      return;
+    }
+    setStatus('Đã gửi · chờ ACK');
+  }).catch(function(err) {
+    setStatus('Lỗi gửi');
+    if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) restoreLocalState(prevSnap);
+    if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) clearCommandWatch();
+    showToast('critical', 'Không gửi được lệnh', err && err.message ? err.message : String(err));
+  });
+  return true;
+}
+
+window.sendMode = function(mode) {
+  if (state.current.emergency_lock && mode === 'AUTO') { showToast('warning','E-STOP đang khóa','Giải phóng E-STOP trước khi chuyển AUTO.'); return; }
+  writeControl({mode_cmd: mode});
+};
+window.toggleRemote = function(kind) {
+  if (state.current.emergency_lock) {
+    showToast('warning', 'E-STOP đang khóa', 'Giải phóng E-STOP trước khi điều khiển cơ cấu.');
+    return;
+  }
+  if (state.current.mode !== 'MANUAL') {
+    showToast('warning', 'Chế độ AUTO', 'Hãy chuyển sang MANUAL trước khi điều khiển quạt/bơm.');
+    return;
+  }
+  if (kind === 'fan') writeControl({mode_cmd:'MANUAL', fan_cmd: !state.current.fan, pump_cmd: state.current.pump});
+  if (kind === 'pump') {
+    // I3: interlock chỉ chặn chuyển sang BẬT — lệnh TẮT bơm phải đi được mọi
+    // lúc (đang failsafe/mất sensor mà muốn TẮT từ web là quyền hợp lệ;
+    // HMI cũng chỉ chặn pump_cmd=true ở interlock — khớp nhau).
+    if (!state.current.pump && (state.current.failsafe || state.current.comm_ok === false)) {
+      showToast('warning', 'Interlock an toàn', 'Không cho phép bật bơm khi sensor/RS-485 chưa hợp lệ.');
+      return;
+    }
+    writeControl({mode_cmd:'MANUAL', fan_cmd: state.current.fan, pump_cmd: !state.current.pump});
+  }
+};
+/* Vault toggle: checkbox tự lật UI TRƯỚC khi guard (E-STOP/AUTO/interlock)
+   hay writeControl (offline / chờ ACK / mật khẩu) chạy. Sau khi toggleRemote
+   xong, đồng bộ lại checkbox với state THẬT:
+   - lệnh đi qua → optimistic đã set state mới = checkbox → giữ nguyên;
+   - lệnh bị chặn → state không đổi → revert về trạng thái hiện tại. */
+window.vaultToggle = function(kind, input) {
+  toggleRemote(kind);
+  var real = !!(state.current && state.current[kind]);
+  if (input.checked !== real) input.checked = real;
+};
+window.sendEmergency = function(on) {
+  // H2: E-STOP luôn đi trước (urgent) — không bị chặn bởi lệnh đang chờ ACK.
+  writeControl({mode_cmd:'MANUAL', emergency_cmd: !!on, fan_cmd:false, pump_cmd:false},
+               {urgent: true});
+};
+window.clearEmergency = function() {
+  // H2: E-STOP chưa xác nhận (timeout, không rõ đã kích hoạt) → chặn Clear
+  // cho tới khi có ACK hoặc system_status xác nhận khóa đã chốt.
+  if (state.estopUnacked && !state.current.emergency_lock) {
+    showToast('warning', 'E-STOP CHƯA XÁC NHẬN',
+      'Chưa rõ E-STOP đã kích hoạt — gửi lại E-STOP hoặc chờ HMI xác nhận trước khi giải phóng.');
+    return;
+  }
+  writeControl({mode_cmd:'MANUAL', clear_emergency:true, fan_cmd: state.current.fan, pump_cmd:false});
+};
+
+// N6: đọc số an toàn — ô TRỐNG → NaN (Number('') === 0 từng bị coi là 0°C
+// hợp lệ) và chặn miền -40..125°C giống ControlEngine.update_settings().
+var T_MIN = -40, T_MAX = 125;
+function readNum(id) {
+  var el = $(id);
+  var s = el ? String(el.value).trim() : '';
+  return s === '' ? NaN : Number(s);
+}
+function inRange(v) { return Number.isFinite(v) && v >= T_MIN && v <= T_MAX; }
+
+window.saveSettings = function() {
+  if (!state.db) { showToast('warning','Firebase chưa sẵn sàng','Không thể lưu cấu hình.'); return; }
+  var vals = {
+    fan_on: readNum('set-fan-on'),
+    fan_off: readNum('set-fan-off'),
+    pump_on: readNum('set-pump-on'),
+    pump_off: readNum('set-pump-off'),
+    max_timeouts: readNum('set-timeouts')
+  };
+  if (!(inRange(vals.fan_on) && inRange(vals.fan_off) && inRange(vals.pump_on) && inRange(vals.pump_off) &&
+        vals.fan_off < vals.fan_on && vals.pump_off < vals.pump_on &&
+        // Khớp ControlEngine.update_settings(): quạt phải làm mát TRƯỚC bơm báo cháy (không thì xịt nước trước khi làm mát).
+        vals.fan_on <= vals.pump_on && vals.fan_off <= vals.pump_off &&
+        Number.isInteger(vals.max_timeouts) && vals.max_timeouts === 1)) {
+    showToast('warning','Cấu hình không hợp lệ','OFF < ON từng cặp, quạt ≤ bơm, ngưỡng trong -40..125°C; failsafe khóa ở đúng 1 chu kỳ.');
+    return;
+  }
+  var keys = ['fan_on','fan_off','pump_on','pump_off','max_timeouts'], s0 = state.settings || {};
+  if (keys.every(function(k){ return s0[k] === vals[k]; })) { showToast('info','Cấu hình đã khớp','Không có thay đổi — HMI đang chạy đúng giá trị này.'); return; }
+  if (state.pendingSettings) { clearTimeout(state.pendingSettings.timer); state.pendingSettings = null; }
+  state.pendingSettings = {
+    vals: vals,
+    // M4: KHÔNG còn timer 4s "Đã lưu" — chỉ /settings_ack xác nhận (quá 10s → báo HMI chưa xác nhận).
+    timer: setTimeout(function(){
+      state.pendingSettings = null;
+      showToast('warning','HMI chưa xác nhận cấu hình','Chưa nhận /settings_ack sau 10s — HMI có thể offline.');
+    }, 10000)
+  };
+  showToast('info','Đang đồng bộ cấu hình','Chờ HMI xác nhận…');
+  state.db.ref('settings').set(vals).catch(function(err){
+    if (state.pendingSettings) { clearTimeout(state.pendingSettings.timer); state.pendingSettings = null; }
+    showToast('critical','Lưu thất bại', String(err));
+  });
+};
+
+function sanitizeSettings(v) {
+  var d = { fan_on:32, fan_off:30, pump_on:50, pump_off:42, max_timeouts:1 };
+  if (!v || typeof v !== 'object') return d;
+  // Dùng num() thay vì Number(): Number(null) === 0 nên giá trị null trong DB
+  // sẽ bị hiểu là 0 °C (fan_off = 0) thay vì rơi về mặc định an toàn.
+  ['fan_on','fan_off','pump_on','pump_off'].forEach(function(k){
+    var n = num(v[k], NaN); if (Number.isFinite(n)) d[k] = n;
+  });
+  d.max_timeouts = 1;
+  if (!(d.fan_off < d.fan_on && d.pump_off < d.pump_on &&
+        d.fan_on <= d.pump_on && d.fan_off <= d.pump_off)) {
+    return { fan_on:32, fan_off:30, pump_on:50, pump_off:42, max_timeouts:1 };
+  }
+  return d;
+}
+
+/* ---------- Hỗ trợ lịch sử dạng mảng có key (xem histRef ở dưới) ---------- */
+function historyEntry(key, p) {
+  return { key: key, time: parseTs(p.timestamp),
+           t: num(p.temperature, 0), h: num(p.humidity, 0),
+           fan: p.fan_state === true, pump: p.pump_state === true,
+           mode: String(p.mode || 'AUTO') };
+}
+function historyIndexByKey(key) {
+  for (var i = 0; i < state.history.length; i++) {
+    if (state.history[i].key === key) return i;
+  }
+  return -1;
+}
+function insertHistory(entry) {
+  var idx = historyIndexByKey(entry.key);
+  if (idx >= 0) { state.history[idx] = entry; return; }
+  var pos = state.history.length;
+  // Key là chuỗi mili-giây cùng độ dài (13 ký tự) → so sánh chuỗi = so sánh thời gian.
+  while (pos > 0 && state.history[pos-1].key && state.history[pos-1].key > entry.key) pos--;
+  state.history.splice(pos, 0, entry);
+  while (state.history.length > MAX_HISTORY) state.history.shift();
+}
+var historyRenderTimer = null;
+/* child_added lúc khởi động bắn ~150 sự kiện liên tiếp → gộp lại 1 lần render,
+   nếu không dashboard sẽ re-render 150 lần trong 100ms đầu. */
+function scheduleHistoryRender() {
+  if (historyRenderTimer) return;
+  historyRenderTimer = setTimeout(function() {
+    historyRenderTimer = null;
+    renderDashboard(); renderMonitoring(); renderReports();
+  }, 150);
+}
+
+function initFirebase() {
+  if (typeof firebase === 'undefined') {
+    console.warn('[Firebase] SDK chưa load — chạy offline.');
+    setText('set-conn', 'OFFLINE');
+    state.firebaseOk = false;
+    return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  } catch (e) {
+    console.error('[Firebase] Init thất bại:', e);
+    state.firebaseOk = false;
+    setText('set-conn', 'OFFLINE');
+    setTimeout(function(){ showToast('warning','⚠️ Firebase không khả dụng','Kiểm tra mạng và Firebase Rules.'); },1500);
+    return;
+  }
+  // N8/M2: Rules đã mở (.read/.write: true) — Web KHÔNG đăng nhập,
+  // mở link là vào; startRealtime chạy trực tiếp sau khi init SDK thành công.
+  startRealtime();
+}
+
+function startRealtime() {
+  var db = firebase.database();
+  state.db = db;
+  state.firebaseOk = false;
+  setText('set-conn', 'Đang kết nối…');
+  try {
+
+    db.ref('.info/connected').on('value', function(snap){
+      state.firebaseOk = !!snap.val();
+      setText('set-conn', state.firebaseOk ? 'Online ✓' : 'Offline');
+      var sc = $('set-conn'); if (sc) sc.style.color = state.firebaseOk ? 'var(--success)' : 'var(--danger)';
+      renderDashboard();
+    });
+
+    db.ref('system_status').on('value', function(snap) {
+      var v = snap.val();
+      if (!v) return;
+      var prev = state.current;
+      // Trong lúc chờ ACK (status = TT cũ) hoặc status mang seq < ack mới nhất
+      // (status cũ về SAU ack) — giữ mode/fan/pump/khóa từ optimistic, không nháy.
+      var pend = !!state.pendingCmd || num(v.last_command_sequence, 0) < state.lastAckSequence;
+      state.current = {
+        t: num(v.temperature, isFinite(prev.t) ? prev.t : null),   // num(): fallback số cũ
+        h: num(v.humidity,   isFinite(prev.h) ? prev.h : null),
+        fan: pend ? prev.fan : !!v.fan_state, pump: pend ? prev.pump : !!v.pump_state,
+        mode: pend ? prev.mode : (v.mode || 'AUTO'), comm_ok: typeof v.comm_ok === 'boolean' ? v.comm_ok : false,
+        failsafe: !!v.failsafe, heartbeat: num(v.heartbeat, 0),
+        emergency_lock: pend ? prev.emergency_lock : !!v.emergency_lock,
+        last_command_sequence: num(v.last_command_sequence, 0),
+        last_command_result: String(v.last_command_result || '')
+      };
+      // H2: system_status xác nhận E-STOP đã CHỐT thật → bỏ cờ chưa xác nhận.
+      if (state.estopUnacked && v.emergency_lock === true) state.estopUnacked = false;
+      // M1: age tính từ thời điểm MÁY NÀY nhận được heartbeat MỚI — không so
+      // timestamp của HMI với đồng hồ trình duyệt nữa (lệch giờ → LED báo sai).
+      var hb = num(v.heartbeat, 0);
+      if (hb !== state.lastHeartbeat) {
+        state.lastHeartbeat = hb;
+        state.lastUpdate = Date.now();
+      }
+      if (!state.historySourceReady) {
+        // Điểm tạm thời CHƯA có key — sẽ bị loại bỏ ngay khi listener
+        // /history (child_added) của chính nó bắt đầu nhận dữ liệu.
+        state.history.push({key: null, time: parseTs(v.timestamp),
+                             t: state.current.t||0, h: state.current.h||0,
+                             fan:state.current.fan, pump:state.current.pump, mode:state.current.mode});
+        if (state.history.length > MAX_HISTORY) state.history.shift();
+      }
+      renderDashboard(); renderMonitoring(); renderReports(); renderDevices();
+    }, function(err) {
+      console.error('[Firebase] Lỗi system_status:', err);
+      state.firebaseOk = false;
+    });
+
+    /* ---------------------------------------------------------------------
+       HISTORY — dùng child_added / child_changed / child_removed thay vì
+       value + limitToLast. Bản cũ tải lại TOÀN BỘ 300 bản ghi mỗi 5 giây
+       (~90KB/5s ≈ 46GB/tháng — vượt hạn mức tải 10GB/tháng của Firebase
+       RTDB free). Bây giờ mỗi chu kỳ chỉ tải THÊM 1 bản ghi (~400B).
+       --------------------------------------------------------------------- */
+    var histRef = db.ref('history').orderByKey().limitToLast(MAX_HISTORY);
+
+    histRef.on('child_added', function(snap) {
+      if (!state.historySourceReady) {
+        // Loại các điểm tạm (key = null) lấy từ /system_status.
+        state.history = state.history.filter(function(x){ return !!x.key; });
+        state.historySourceReady = true;
+      }
+      insertHistory(historyEntry(snap.key, snap.val() || {}));
+      scheduleHistoryRender();
+    }, function(err){ console.error('[Firebase] history add:', err); });
+    histRef.on('child_changed', function(snap) {
+      insertHistory(historyEntry(snap.key, snap.val() || {}));
+      scheduleHistoryRender();
+    }, function(err){ console.error('[Firebase] history changed:', err); });
+    histRef.on('child_removed', function(snap) {
+      // limitToLast trượt cửa sổ → bản ghi đầu tiên bị đẩy ra ngoài.
+      var i = historyIndexByKey(snap.key);
+      if (i >= 0) { state.history.splice(i, 1); scheduleHistoryRender(); }
+    }, function(err){ console.warn('[Firebase] history:', err); });
+
+    db.ref('alarms').limitToLast(200).on('value', function(snap) {
+      var v = snap.val() || {}, list = [];
+      Object.keys(v).forEach(function(k){
+        var a = v[k] || {};
+        var type = String(a.type || 'UNKNOWN');
+        var tnum = (a.temperature == null || a.temperature === '') ? null : Number(a.temperature);
+        list.push({
+          key: k,
+          type: type,                                   // chuỗi → sẽ escape khi render
+          message: String(a.message || ''),
+          temperature: isFinite(tnum) ? tnum : null,     // tránh .toFixed() ném lỗi
+          timestamp: a.timestamp,
+          severity: alarmSeverity(type)
+        });
+      });
+      list.sort(function(a,b){ return parseTs(b.timestamp)-parseTs(a.timestamp); });
+      state.alarms = list;
+
+      if (!state.alarmsBaselineReady) {
+        // Snapshot ĐẦU TIÊN khi mở trang = lịch sử cũ → chỉ đánh dấu đã xem,
+        // KHÔNG toast. Cách cũ (seenKeysCount > 1) chỉ bỏ qua đúng 1 mục nên
+        // toàn bộ báo cáo cũ bị "phát" như thể vừa xảy ra ở mọi lần mở trang.
+        state.alarmsBaselineReady = true;
+        for (var b = 0; b < list.length; b++) state.seenKeys[list[b].key] = true;
+        if (!state.hasAlarmReadBaseline) {
+          state.lastSeenAlarmTs = list.length ? (alarmTs(list[0]) || Date.now()) : Date.now();
+          state.hasAlarmReadBaseline = true;
+          try { localStorage.setItem('pumpvision_last_alarm_ts', String(state.lastSeenAlarmTs)); } catch(e) {}
+        }
+      } else {
+        for (var i = 0; i < list.length; i++) {
+          if (!state.seenKeys[list[i].key]) {
+            state.seenKeys[list[i].key] = true;
+            toastAlarm(list[i]);                        // chỉ báo cáo phát sinh MỚI
+          }
+        }
+      }
+      renderAlarms(); renderAlarmStats(); renderRecentAlarms();
+    }, function(err){ console.error('[Firebase] Lỗi alarms:',err); });
+
+    db.ref('settings').on('value', function(snap){
+      var v = snap.val(); if (!v) return;
+      state.settings = sanitizeSettings(v);
+      // ID trong HTML dùng GẠCH NGANG (set-fan-on) còn khóa DB dùng GẠCH DƯỚI (fan_on),
+      // riêng max_timeouts nằm ở ô 'set-timeouts'. Dòng cũ nối chuỗi 'set-' + k
+      // → ra set-fan_on → getElementById luôn null → form KHÔNG BAO GIỜ nạp từ Firebase.
+      [['fan_on','set-fan-on'], ['fan_off','set-fan-off'],
+       ['pump_on','set-pump-on'], ['pump_off','set-pump-off'],
+       ['max_timeouts','set-timeouts']].forEach(function(p){
+        if ($(p[1])) $(p[1]).value = state.settings[p[0]];
+      });
+      renderDevices();
+
+      // HMI từ chối cấu hình → nó ghi đè lại /settings bằng bộ ngưỡng ĐANG CHẠY.
+      // Phát hiện ngay tại đây, hủy hẹn giờ "lưu thành công" phía saveSettings.
+      if (state.pendingSettings) {
+        var p = state.pendingSettings.vals, s = state.settings;
+        var same = p.fan_on === s.fan_on && p.fan_off === s.fan_off &&
+                   p.pump_on === s.pump_on && p.pump_off === s.pump_off;
+        if (!same) {
+          clearTimeout(state.pendingSettings.timer);
+          state.pendingSettings = null;
+          showToast('warning', 'HMI từ chối cấu hình',
+            'Đã khôi phục bộ ngưỡng đang chạy. Kiểm tra: OFF < ON từng cặp và Quạt phải khởi động trước Bơm.');
+        }
+      }
+    }, function(err){ console.error('[Firebase] Lỗi settings:', err); });
+
+    // M4: HMI xác nhận THẬT — /settings_ack chỉ được push khi cấu hình đã
+    // được update_settings() chấp nhận; khớp với giá trị vừa lưu → báo thành
+    // công (thay cho timer 4s "Đã lưu" trước đây).
+    db.ref('settings_ack').on('value', function(snap){
+      var v = snap.val(); if (!v) return;
+      if (!state.pendingSettings) return;
+      var p = state.pendingSettings.vals;
+      if (p.fan_on === v.fan_on && p.fan_off === v.fan_off &&
+          p.pump_on === v.pump_on && p.pump_off === v.pump_off &&
+          p.max_timeouts === v.max_timeouts) {
+        clearTimeout(state.pendingSettings.timer);
+        state.pendingSettings = null;
+        showToast('success', 'HMI đã áp dụng cấu hình',
+          'Cấu hình đang chạy khớp với giá trị vừa lưu' +
+          (v.applied_at ? ' (áp dụng lúc ' + v.applied_at + ')' : '') + '.');
+      }
+    });
+
+    db.ref('control_ack').on('value', function(snap){
+      handleAck(snap.val());
+    }, function(err){ console.error('[Firebase] Lỗi control_ack:', err); });
+
+  } catch (e) {
+    console.error('[Firebase] startRealtime thất bại:', e);
+    state.firebaseOk = false;
+    setText('set-conn', 'OFFLINE');
+    setTimeout(function(){ showToast('warning','⚠️ Firebase không khả dụng','Kiểm tra mạng và Firebase Rules.'); },1500);
+  }
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+initCharts();
+initFirebase();
+
+// Back/forward button của trình duyệt phải đổi view như bấm menu,
+// nếu không hash đổi nhưng sidebar vẫn hiện đúng menu cũ.
+window.addEventListener('hashchange', function() {
+  var v = (location.hash || '').replace('#', '');
+  if (ROUTES[v]) navigate(v);
+});
+
+// Filter listeners — MỖI phần tử chỉ 1 listener: <select> modern bắn cả
+// 'input' lẫn 'change' → nghe 2 event sẽ renderAlarms 2 lần mỗi lần đổi (E10).
+var filterIds = ['al-search', 'al-filter-type', 'al-filter-sev'];
+for (var fi = 0; fi < filterIds.length; fi++) {
+  var fel = $(filterIds[fi]);
+  if (fel) fel.addEventListener('input', renderAlarms);
+}
+
+// Ô tìm kiếm topbar (E9b) — nối thẳng vào bộ lọc cảnh báo.
+var gs = $('global-search');
+if (gs) gs.addEventListener('input', function() {
+  var als = $('al-search');
+  if (als) { als.value = gs.value; renderAlarms(); }
+});
+
+// Periodic updates
+setInterval(function() { updateConnection(); renderDashboard(); }, 3000);
+setInterval(function() { if (state.history.length) renderReports(); }, 5000);
+
+// Navigate from hash
+var h0 = (location.hash || '').replace('#', '') || 'dashboard';
+if (ROUTES[h0]) navigate(h0);
+
+
+// Welcome
+setTimeout(function() {
+  if (state.lastUpdate) {
+    showToast('info', '👋 Chào mừng', 'Đã kết nối SCADA. Dữ liệu đang cập nhật.');
+  } else if (state.firebaseOk) {
+    showToast('info', '⏳ Đang chờ', 'Firebase OK, chưa có dữ liệu. Kiểm tra app SCADA Python.');
+  } else {
+    showToast('warning', '⚠️ Offline', 'Không kết nối được Firebase. Kiểm tra mạng.');
+  }
+}, 2500);
+
+// Global error catch
+window.addEventListener('error', function(e) {
+  console.error('[Global error]', e.message || e.error);
+});
+</script>
+</body>
+</html>
