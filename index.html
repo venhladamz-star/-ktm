@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
+<html lang="vi"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PumpVision · SCADA ERP</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
@@ -967,26 +966,34 @@ tbody tr:last-child td{border-bottom:none}
 @media(max-width:430px){
   .control-grid{grid-template-columns:1fr}
 }
+/* ===== ENV SUB-TABS: TWIN 3D + BIEU DO MOI TRUONG (port tu du an Kien truc mang) ===== */
+.env-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.env-tab{min-height:40px;padding:0 14px;border:0;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-mute);transition:color .15s,border-color .15s}
+.env-tab:hover{color:var(--text)}
+.env-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.env-tab-short{display:none}
+.env-panel[hidden]{display:none}
+.env-sub{font-size:12px;color:var(--text-mute);margin-top:4px}
+.env-twin-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.env-badge{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:var(--r-pill);background:var(--surface-soft);border:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-mute);white-space:nowrap}
+.env-badge-ok{color:#059669;border-color:#a7f3d0;background:#ecfdf5}
+.env-badge-err{color:#dc2626;border-color:#fecaca;background:#fef2f2}
+/* Container 3D: cao co dinh 460px desktop; phone <=640px clamp 300-420px (~55vh).
+   Chi doi CHIEU CAO - width luon 100% cot de bundle 3D tu thich ung kho man. */
+.env-twin-box{height:460px;width:100%}
+@media(max-width:640px){
+  .env-tab-full{display:none}
+  .env-tab-short{display:inline}
+  .env-twin-box{height:clamp(300px,55vh,420px)}
+}
 </style>
+<!-- Server Room Digital Twin (3D) - bundle UMD tu chua React + three (port tu du an Kien truc mang) -->
+<link rel="stylesheet" href="assets/server-room-twin.css?v=0.1.0">
 </head>
-<body>
+<body data-device="laptop">
 
 <!-- ==================== BOOT LOADER (Uiverse.io by anand_4957) ==================== -->
-<div id="boot-loader" aria-busy="true" aria-label="Đang tải ứng dụng">
-  <div class="loader">
-    <span><span></span><span></span><span></span><span></span></span>
-    <div class="base">
-      <span></span>
-      <div class="face"></div>
-    </div>
-  </div>
-  <div class="longfazers">
-    <span></span><span></span><span></span><span></span>
-  </div>
-  <div class="boot-glitch">
-    <div data-glitch="Loading..." class="glitch">Loading...</div>
-  </div>
-</div>
+
 <script>
 /* Boot loader: hiện đúng 3s rồi fade + gỡ khỏi DOM.
    CSS failsafe 6s dự phòng nếu JS lỗi. */
@@ -1001,7 +1008,7 @@ tbody tr:last-child td{border-bottom:none}
 </script>
 
 <!-- ==================== DEVICE PICKER ==================== -->
-<div id="picker">
+<div id="picker" class="hidden">
   <div class="brand">
     <div class="brand-logo">⚡</div>
     <div class="brand-text">
@@ -1027,7 +1034,7 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 
 <!-- ==================== APP ==================== -->
-<div id="app">
+<div id="app" class="ready">
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar" id="sidebar">
@@ -1085,13 +1092,13 @@ tbody tr:last-child td{border-bottom:none}
 
       <div class="topbar-right">
         <div class="conn-pill">
-          <span class="status-led" id="topbar-led"></span>
-          <span id="topbar-conn-text">Đang kết nối</span>
+          <span class="status-led err" id="topbar-led"></span>
+          <span id="topbar-conn-text">Mất kết nối</span>
         </div>
 
         <button class="icon-btn" title="Thông báo" onclick="markAlarmsRead(); navigate('alarms')">
           🔔
-          <span class="dot-badge" id="bell-dot" style="display:none"></span>
+          <span class="dot-badge" id="bell-dot" style="display: none;"></span>
         </button>
         <button class="icon-btn" title="Trợ giúp">❓</button>
         <div class="user-avatar" title="Quản trị viên">A</div>
@@ -1116,21 +1123,21 @@ tbody tr:last-child td{border-bottom:none}
           <div class="kpi-card">
             <div class="kpi-top">
               <div class="kpi-icon blue">🌡️</div>
-              <span class="kpi-badge gray" id="kpi-t-badge">Live</span>
+              <span class="kpi-badge down" id="kpi-t-badge">⚠ Quá nhiệt</span>
             </div>
             <div class="kpi-label">Nhiệt độ</div>
-            <div class="kpi-value green" id="kpi-t-val">--.-<span class="kpi-unit">°C</span></div>
-            <div class="kpi-bar"><div class="kpi-bar-fill green" id="kpi-t-bar" style="width:0%"></div></div>
+            <div class="kpi-value red" id="kpi-t-val">52.0<span class="kpi-unit">°C</span></div>
+            <div class="kpi-bar"><div class="kpi-bar-fill red" id="kpi-t-bar" style="width: 86.5833%;"></div></div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
               <div class="kpi-icon green">💧</div>
-              <span class="kpi-badge gray" id="kpi-h-badge">0 - 100%</span>
+              <span class="kpi-badge gray" id="kpi-h-badge">Bình thường</span>
             </div>
             <div class="kpi-label">Độ ẩm</div>
-            <div class="kpi-value blue" id="kpi-h-val">--.-<span class="kpi-unit">%</span></div>
-            <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-h-bar" style="width:0%"></div></div>
+            <div class="kpi-value blue" id="kpi-h-val">46.6<span class="kpi-unit">%</span></div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-h-bar" style="width: 46.65%;"></div></div>
           </div>
 
           <div class="kpi-card">
@@ -1155,20 +1162,48 @@ tbody tr:last-child td{border-bottom:none}
         </div>
 
         <div class="dash-grid">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Environmental Monitoring Over Time</div>
-                <div class="card-subtitle" id="chart-range">— điểm dữ liệu</div>
-              </div>
-              <div class="card-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Nhiệt độ</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span> Độ ẩm</span>
+          <!-- ===== ENV SUB-TABS (port tu du an Kien truc mang): block 2-tab chiem
+               DUNG o cot trai (vi tri card "Environmental Monitoring Over Time" cu);
+               System Health (cot phai) giu nguyen. ===== -->
+          <div>
+            <div class="env-tabs" role="tablist" aria-label="Giam sat phong may">
+              <button class="env-tab active" role="tab" aria-selected="true" data-env-tab="twin" type="button">&#128506; <span class="env-tab-full">Digital Twin</span><span class="env-tab-short">3D Twin</span></button>
+              <button class="env-tab" role="tab" aria-selected="false" data-env-tab="mon" type="button">&#128200; <span class="env-tab-full">Environmental Monitoring Over Time</span><span class="env-tab-short">Bieu do moi truong</span></button>
+            </div>
+            <div class="env-panel" id="env-panel-twin" role="tabpanel">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Digital Twin — Phòng server</div>
+                    <div class="env-sub">Mô hình 3D realtime · nhiệt độ / độ ẩm / quạt / bơm</div>
+                  </div>
+                  <div class="env-twin-actions">
+                    <span class="env-badge" id="twin-badge">3D: đang tải…</span>
+                    <button id="twin-reset" class="btn btn-ghost" type="button">&#129517; Góc nhìn toàn cảnh</button>
+                    <button id="twin-plant" class="btn btn-ghost" type="button">&#127981; Thiết bị ngoài</button>
+                  </div>
+                </div>
+                <!-- Container 3D cao co dinh: 460px desktop; <=640px clamp(300px,55vh,420px) -->
+                <div id="twin" class="env-twin-box"></div>
               </div>
             </div>
-            <div class="chart-wrap">
-              <div class="lane"><canvas id="chart-live"></canvas></div>
-              <div class="lane"><canvas id="chart-live-h"></canvas></div>
+            <div class="env-panel" id="env-panel-mon" role="tabpanel" hidden>
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Environmental Monitoring Over Time</div>
+                    <div class="card-subtitle" id="chart-range">26 điểm dữ liệu</div>
+                  </div>
+                  <div class="card-legend">
+                    <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Nhiệt độ</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span> Độ ẩm</span>
+                  </div>
+                </div>
+                <div class="chart-wrap">
+                  <div class="lane"><canvas id="chart-live"></canvas></div>
+                  <div class="lane"><canvas id="chart-live-h"></canvas></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1178,26 +1213,26 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="status-list">
               <div class="status-item">
-                <span class="status-led" id="st-rs485"></span>
-                <div class="status-meta"><div class="lbl">RS-485</div><div class="val" id="st-rs485-val">--</div></div>
+                <span class="status-led err" id="st-rs485"></span>
+                <div class="status-meta"><div class="lbl">RS-485</div><div class="val" id="st-rs485-val">Timeout</div></div>
               </div>
               <div class="status-item">
                 <span class="status-led on" id="st-cloud"></span>
-                <div class="status-meta"><div class="lbl">Firebase</div><div class="val" id="st-cloud-val">--</div></div>
+                <div class="status-meta"><div class="lbl">Firebase</div><div class="val" id="st-cloud-val">Trực tuyến</div></div>
               </div>
               <div class="status-item">
-                <span class="status-led" id="st-failsafe"></span>
-                <div class="status-meta"><div class="lbl">Failsafe</div><div class="val" id="st-failsafe-val">--</div></div>
+                <span class="status-led off" id="st-failsafe"></span>
+                <div class="status-meta"><div class="lbl">Failsafe</div><div class="val" id="st-failsafe-val">Bình thường</div></div>
               </div>
               <div class="status-item">
-                <span class="status-led" id="st-mode"></span>
-                <div class="status-meta"><div class="lbl">Chế độ</div><div class="val" id="st-mode-val">--</div></div>
+                <span class="status-led warn" id="st-mode"></span>
+                <div class="status-meta"><div class="lbl">Chế độ</div><div class="val" id="st-mode-val">MANUAL</div></div>
               </div>
             </div>
             <div class="card-header" style="margin-top:24px;margin-bottom:14px">
               <div class="card-title" style="font-size:14px">Cảnh báo gần đây</div>
             </div>
-            <div class="event-list" id="recent-alarms"></div>
+            <div class="event-list" id="recent-alarms"><div class="event-card info"><div class="event-icon info">ℹ️</div><div class="event-body"><div class="event-title">Cảnh báo</div><div class="event-desc">Mini-SCADA Water System started</div></div><div class="event-time">23d ago</div></div></div>
           </div>
         </div>
 
@@ -1207,14 +1242,14 @@ tbody tr:last-child td{border-bottom:none}
               <div class="card-title">Điều khiển từ xa</div>
               <div class="card-subtitle">ERP → Firebase → HMI → Modbus Relay</div>
             </div>
-            <span class="kpi-badge gray" id="cmd-status">Sẵn sàng</span>
+            <span class="kpi-badge gray" id="cmd-status">Lệch đồng hồ 242636s</span>
           </div>
           <div class="control-grid">
             <div class="control-panel">
               <h4>Chế độ vận hành</h4>
               <div class="ctrl-row">
-                <button id="ctrl-auto" class="btn btn-primary ctrl-btn" onclick="sendMode('AUTO')">🤖 AUTO</button>
-                <button id="ctrl-manual" class="btn btn-ghost ctrl-btn" onclick="sendMode('MANUAL')">🖐 MANUAL</button>
+                <button id="ctrl-auto" class="btn ctrl-btn btn-ghost" onclick="sendMode('AUTO')">🤖 AUTO</button>
+                <button id="ctrl-manual" class="btn ctrl-btn btn-primary is-active" onclick="sendMode('MANUAL')">🖐 MANUAL</button>
               </div>
             </div>
             <div class="control-panel">
@@ -1222,7 +1257,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="ctrl-row vault-row">
                 <div class="vault-slot">
                   <label class="ux-vault-toggle">
-                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-fan" aria-label="Bật/tắt quạt" onchange="vaultToggle('fan', this)" />
+                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-fan" aria-label="Bật/tắt quạt" onchange="vaultToggle('fan', this)">
                     <div class="ux-vault-toggle__wrapper">
                       <!-- From Uiverse.io by Gidarx — filter metal-noise: khai báo 1 lần, 2 toggle dùng chung -->
                       <svg class="ux-vault-toggle__filter" width="0" height="0">
@@ -1264,7 +1299,7 @@ tbody tr:last-child td{border-bottom:none}
                 </div>
                 <div class="vault-slot">
                   <label class="ux-vault-toggle">
-                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-pump" aria-label="Bật/tắt bơm" onchange="vaultToggle('pump', this)" />
+                    <input type="checkbox" class="ux-vault-toggle__input" id="vault-pump" aria-label="Bật/tắt bơm" onchange="vaultToggle('pump', this)">
                     <div class="ux-vault-toggle__wrapper">
                       <!-- filter #ux-metal-noise: dùng chung (khai báo ở toggle Quạt, id toàn cục) -->
                       <div class="ux-vault-toggle__track">
@@ -1300,7 +1335,7 @@ tbody tr:last-child td{border-bottom:none}
               <h4>An toàn</h4>
               <div class="ctrl-row">
                 <button id="ctrl-estop" class="btn btn-ghost ctrl-btn" style="color:var(--danger);border-color:#fecaca" onclick="sendEmergency(true)">⛔ E-STOP</button>
-                <button id="ctrl-clear-estop" class="btn btn-ghost ctrl-btn" onclick="clearEmergency()">✓ Giải phóng</button>
+                <button id="ctrl-clear-estop" class="btn btn-ghost ctrl-btn" onclick="clearEmergency()" disabled="">✓ Giải phóng</button>
               </div>
             </div>
             <div class="control-panel">
@@ -1314,7 +1349,7 @@ tbody tr:last-child td{border-bottom:none}
           <div class="card-header">
             <div class="card-title">Load Distribution by Actuator</div>
           </div>
-          <div class="asset-list" id="asset-list"></div>
+          <div class="asset-list" id="asset-list"><div class="asset-item"><div class="asset-head"><span class="asset-name">Nhiệt độ (SHT20)</span><span class="asset-value danger">52.0 °C</span></div><div class="asset-bar"><div class="asset-bar-fill danger" style="width:86.58333333333333%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Độ ẩm (SHT20)</span><span class="asset-value ">46.6 %</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:46.65%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Quạt 12V (CH2)</span><span class="asset-value ">Dừng</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:5%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Bơm MB370 (CH1)</span><span class="asset-value ">Dừng</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:5%"></div></div></div></div>
         </div>
       </section>
 
@@ -1334,7 +1369,7 @@ tbody tr:last-child td{border-bottom:none}
           <div class="card-header">
             <div>
               <div class="card-title">Biểu đồ chi tiết</div>
-              <div class="card-subtitle" id="mon-chart-range">—</div>
+              <div class="card-subtitle" id="mon-chart-range">26 điểm dữ liệu</div>
             </div>
             <div class="card-legend">
               <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Nhiệt độ</span>
@@ -1342,8 +1377,8 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
           <div class="chart-wrap tall">
-            <div class="lane"><canvas id="chart-mono"></canvas></div>
-            <div class="lane"><canvas id="chart-mono-h"></canvas></div>
+            <div class="lane"><canvas id="chart-mono" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+            <div class="lane"><canvas id="chart-mono-h" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
           </div>
         </div>
 
@@ -1363,7 +1398,7 @@ tbody tr:last-child td{border-bottom:none}
                   <th class="hide-mobile">Chế độ</th>
                 </tr>
               </thead>
-              <tbody id="live-table"></tbody>
+              <tbody id="live-table"><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:10 18/10</td><td class="mono" style="font-weight:700">53.5 °C</td><td class="mono">53.1 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:10 18/10</td><td class="mono" style="font-weight:700">54.5 °C</td><td class="mono">71.8 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:10 18/10</td><td class="mono" style="font-weight:700">50.0 °C</td><td class="mono">74.7 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:10 18/10</td><td class="mono" style="font-weight:700">41.9 °C</td><td class="mono">57.9 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill info">AUTO</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:00 16/10</td><td class="mono" style="font-weight:700">31.8 °C</td><td class="mono">61.8 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill info">AUTO</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:00 16/10</td><td class="mono" style="font-weight:700">25.8 °C</td><td class="mono">43.0 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:00 16/10</td><td class="mono" style="font-weight:700">25.3 °C</td><td class="mono">36.1 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">21:00 16/10</td><td class="mono" style="font-weight:700">30.6 °C</td><td class="mono">46.0 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">38.6 °C</td><td class="mono">63.8 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">48.0 °C</td><td class="mono">76.4 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">54.0 °C</td><td class="mono">66.3 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">54.9 °C</td><td class="mono">47.2 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill critical">ON</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">50.1 °C</td><td class="mono">36.3 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">41.6 °C</td><td class="mono">42.3 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">32.3 °C</td><td class="mono">59.9 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">26.0 °C</td><td class="mono">72.8 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">25.6 °C</td><td class="mono">70.3 %</td><td><span class="sev-pill ok">ON</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">29.8 °C</td><td class="mono">54.5 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">38.3 °C</td><td class="mono">36.7 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill critical">ON</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:59 16/10</td><td class="mono" style="font-weight:700">47.6 °C</td><td class="mono">37.7 %</td><td><span class="sev-pill ok">ON</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:58 16/10</td><td class="mono" style="font-weight:700">53.8 °C</td><td class="mono">52.8 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:58 16/10</td><td class="mono" style="font-weight:700">54.9 °C</td><td class="mono">71.9 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:58 16/10</td><td class="mono" style="font-weight:700">50.4 °C</td><td class="mono">75.0 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill info">AUTO</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:58 16/10</td><td class="mono" style="font-weight:700">41.9 °C</td><td class="mono">58.2 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill info">AUTO</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:53 16/10</td><td class="mono" style="font-weight:700">50.5 °C</td><td class="mono">72.8 %</td><td><span class="sev-pill ok">ON</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill high">MANUAL</span></td></tr><tr><td class="mono" style="color:var(--text-mute);font-size:12px">20:53 16/10</td><td class="mono" style="font-weight:700">42.1 °C</td><td class="mono">59.6 %</td><td><span class="sev-pill off">OFF</span></td><td><span class="sev-pill off">OFF</span></td><td class="hide-mobile"><span class="sev-pill info">AUTO</span></td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1384,13 +1419,13 @@ tbody tr:last-child td{border-bottom:none}
         <div class="stat-grid">
           <div class="stat-block">
             <div class="stat-label">Tổng cảnh báo</div>
-            <div class="stat-value" id="al-total">0</div>
+            <div class="stat-value" id="al-total">1</div>
             <div class="stat-sub">200 bản ghi gần nhất</div>
           </div>
           <div class="stat-block">
             <div class="stat-label" style="color:var(--danger-dark)">Cháy (FIRE)</div>
             <div class="stat-value" style="color:var(--danger)" id="al-fire">0</div>
-            <div class="stat-sub" id="al-fire-sub"></div>
+            <div class="stat-sub" id="al-fire-sub">Nhiệt độ ≥ 50.0°C</div>
           </div>
           <div class="stat-block">
             <div class="stat-label" style="color:#92400e">Mất kết nối</div>
@@ -1421,6 +1456,7 @@ tbody tr:last-child td{border-bottom:none}
               <option value="ESTOP_RELAY_FAIL">⚠️ Lỗi relay E-STOP</option>
               <option value="FAN_ACTUATOR_FAIL">🌀 Lỗi cơ cấu quạt</option>
               <option value="PUMP_ACTUATOR_FAIL">💧 Lỗi cơ cấu bơm</option>
+              <option value="SLAVE_ERROR">🔌 Lỗi thiết bị Modbus</option>
             </select>
             <select class="select" id="al-filter-sev">
               <option value="">Tất cả mức độ</option>
@@ -1442,7 +1478,7 @@ tbody tr:last-child td{border-bottom:none}
                   <th style="width:120px" class="hide-mobile">Nhiệt độ</th>
                 </tr>
               </thead>
-              <tbody id="alarm-table"></tbody>
+              <tbody id="alarm-table"><tr><td class="mono" style="color:var(--text-mute);font-size:12px">13:20:00 28/9/2026</td><td>ℹ️ <b style="font-size:12px">SYSTEM</b></td><td><span class="sev-pill info">INFO</span></td><td style="color:var(--text-soft)">Mini-SCADA Water System started</td><td class="mono hide-mobile" style="font-weight:600">—</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1467,8 +1503,8 @@ tbody tr:last-child td{border-bottom:none}
               </div>
             </div>
             <div class="device-rows">
-              <div class="device-row"><span class="k">Nhiệt độ</span><span class="v" id="dev-sht-t">--</span></div>
-              <div class="device-row"><span class="k">Độ ẩm</span><span class="v" id="dev-sht-h">--</span></div>
+              <div class="device-row"><span class="k">Nhiệt độ</span><span class="v" id="dev-sht-t">52.0 °C</span></div>
+              <div class="device-row"><span class="k">Độ ẩm</span><span class="v" id="dev-sht-h">46.6 %</span></div>
               <div class="device-row"><span class="k">Register</span><span class="v">0x0001 - 0x0002</span></div>
               <div class="device-row"><span class="k">Baudrate</span><span class="v">9600 8N1</span></div>
             </div>
@@ -1518,7 +1554,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="device-row"><span class="k">Điện áp</span><span class="v">12 V DC</span></div>
               <div class="device-row"><span class="k">Ngưỡng ON</span><span class="v" id="dev-fan-on">T ≥ 32.0°C</span></div>
               <div class="device-row"><span class="k">Ngưỡng OFF</span><span class="v" id="dev-fan-off">T ≤ 30.0°C</span></div>
-              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-fan-status">OFF</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-fan-status">Đứng yên</span></div>
             </div>
           </div>
 
@@ -1534,7 +1570,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="device-row"><span class="k">Điện áp</span><span class="v">5 V (LM2596)</span></div>
               <div class="device-row"><span class="k">Ngưỡng ON</span><span class="v" id="dev-pump-on">T ≥ 50.0°C</span></div>
               <div class="device-row"><span class="k">Ngưỡng OFF</span><span class="v" id="dev-pump-off">T ≤ 42.0°C</span></div>
-              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-pump-status">OFF</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-pump-status">Đứng yên</span></div>
             </div>
           </div>
 
@@ -1553,7 +1589,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="device-row"><span class="k"></span><span class="v">/history</span></div>
               <div class="device-row"><span class="k"></span><span class="v">/control · /control_ack</span></div>
               <div class="device-row"><span class="k"></span><span class="v">/settings</span></div>
-              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-cloud-status">--</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="dev-cloud-status">Online</span></div>
             </div>
           </div>
         </div>
@@ -1571,22 +1607,22 @@ tbody tr:last-child td{border-bottom:none}
         <div class="stat-grid">
           <div class="stat-block">
             <div class="stat-label">Nhiệt độ trung bình</div>
-            <div class="stat-value" id="rp-t-avg">--</div>
-            <div class="stat-sub" id="rp-t-range">--</div>
+            <div class="stat-value" id="rp-t-avg">42.1 °C</div>
+            <div class="stat-sub" id="rp-t-range">25.3 → 54.9 °C</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Độ ẩm trung bình</div>
-            <div class="stat-value" id="rp-h-avg">--</div>
-            <div class="stat-sub" id="rp-h-range">--</div>
+            <div class="stat-value" id="rp-h-avg">57.6 %</div>
+            <div class="stat-sub" id="rp-h-range">36.1 → 76.4 %</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Thời gian hoạt động</div>
-            <div class="stat-value" id="rp-uptime">00:00</div>
+            <div class="stat-value" id="rp-uptime">00:09</div>
             <div class="stat-sub">Phiên hiện tại</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Điểm dữ liệu</div>
-            <div class="stat-value" id="rp-points">0</div>
+            <div class="stat-value" id="rp-points">26</div>
             <div class="stat-sub">Trong bộ đệm</div>
           </div>
         </div>
@@ -1594,22 +1630,22 @@ tbody tr:last-child td{border-bottom:none}
         <div class="stat-grid">
           <div class="stat-block">
             <div class="stat-label">Quạt chạy</div>
-            <div class="stat-value" style="color:var(--primary)" id="rp-fan-time">0%</div>
+            <div class="stat-value" style="color:var(--primary)" id="rp-fan-time">12%</div>
             <div class="stat-sub">Tỉ lệ thời gian ON</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Bơm chạy</div>
-            <div class="stat-value" style="color:var(--danger)" id="rp-pump-time">0%</div>
+            <div class="stat-value" style="color:var(--danger)" id="rp-pump-time">8%</div>
             <div class="stat-sub">Tỉ lệ thời gian ON</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Nhiệt độ cao nhất</div>
-            <div class="stat-value" style="color:var(--warning)" id="rp-t-max">--</div>
+            <div class="stat-value" style="color:var(--warning)" id="rp-t-max">54.9 °C</div>
             <div class="stat-sub">Trong bộ đệm</div>
           </div>
           <div class="stat-block">
             <div class="stat-label">Nhiệt độ thấp nhất</div>
-            <div class="stat-value" style="color:var(--success)" id="rp-t-min">--</div>
+            <div class="stat-value" style="color:var(--success)" id="rp-t-min">25.3 °C</div>
             <div class="stat-sub">Trong bộ đệm</div>
           </div>
         </div>
@@ -1645,16 +1681,27 @@ tbody tr:last-child td{border-bottom:none}
               <button class="btn btn-ghost" onclick="switchDevice('phone')" style="flex:1;justify-content:center">📱 Phone</button>
             </div>
             <p style="font-size:12px;color:var(--text-mute);line-height:1.6">
-              Đang sử dụng chế độ: <b id="current-device-mode" style="color:var(--text)">Auto</b>
+              Đang sử dụng chế độ: <b id="current-device-mode" style="color:var(--text)">Laptop / Desktop</b>
             </p>
 
             <div class="card-header" style="margin-top:24px">
               <div class="card-title">Cấu hình Firebase</div>
             </div>
             <div class="device-rows">
-              <div class="device-row"><span class="k">Database URL</span><span class="v" id="set-url" style="font-size:10px">--</span></div>
+              <div class="device-row"><span class="k">Database URL</span><span class="v" id="set-url" style="font-size:10px">tdhdktm-default-rtdb.asia-southeast1.firebasedatabase.app</span></div>
               <div class="device-row"><span class="k">Region</span><span class="v">asia-southeast1</span></div>
-              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="set-conn">--</span></div>
+              <div class="device-row"><span class="k">Trạng thái</span><span class="v" id="set-conn" style="color: var(--success);">Online ✓</span></div>
+            </div>
+            <!-- Rules MỞ theo chủ ý (dự án học phần, không cần đăng nhập):
+                 ai có URL này cũng ghi được /control. Mật khẩu '0001' trong
+                 mã chỉ là trở ngại giao diện, KHÔNG phải kiểm soát truy cập. -->
+            <div class="device-row" style="margin-top:10px">
+              <span class="k" style="color:var(--warning)">ℹ️ Quyền truy cập</span>
+              <span class="v" style="font-size:11px;line-height:1.5">
+                Rules <b>đang mở</b> (<code>.read/.write: true</code>) theo thiết kế
+                dự án học phần — không cần đăng nhập. Mật khẩu trong mã
+                (<code>0001</code>) chỉ chặn thao tác trên giao diện.
+              </span>
             </div>
           </div>
 
@@ -1667,7 +1714,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="device-row"><span class="k">Quạt TẮT</span><span class="v"><input id="set-fan-off" class="input" style="width:110px;height:32px" type="number" step="0.1" value="30.0"> °C</span></div>
               <div class="device-row"><span class="k">Bơm BẬT</span><span class="v"><input id="set-pump-on" class="input" style="width:110px;height:32px" type="number" step="0.1" value="50.0"> °C</span></div>
               <div class="device-row"><span class="k">Bơm TẮT</span><span class="v"><input id="set-pump-off" class="input" style="width:110px;height:32px" type="number" step="0.1" value="42.0"> °C</span></div>
-              <div class="device-row"><span class="k">Failsafe timeout</span><span class="v"><input id="set-timeouts" class="input" style="width:110px;height:32px" type="number" min="1" max="1" step="1" value="1" readonly aria-readonly="true" title="Failsafe được khóa ở 1 chu kỳ theo đặc tả an toàn"> chu kỳ</span></div>
+              <div class="device-row"><span class="k">Failsafe timeout</span><span class="v"><input id="set-timeouts" class="input" style="width:110px;height:32px" type="number" min="1" max="1" step="1" value="1" readonly="" aria-readonly="true" title="Failsafe được khóa ở 1 chu kỳ theo đặc tả an toàn"> chu kỳ</span></div>
               <div style="margin-top:10px"><button class="btn btn-primary" onclick="saveSettings()">💾 Đồng bộ cấu hình sang HMI</button></div>
             </div>
 
@@ -1743,13 +1790,38 @@ function safe(v, fallback) {
    ===================================================================== */
 /* BUG4: định danh TAB này — lệnh /control và ACK mang client_id theo,
    hai tab cùng command_sequence không nhận nhầm ACK của nhau. */
-var CLIENT_ID = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+// H-10: CLIENT_ID phải THEO TỪNG TAB (sessionStorage), không dùng
+// localStorage — nếu dùng chung, 2 tab cùng client_id ⇒ tab B nhận ACK của
+// tab A và có thể ghi đè lệnh của tab A.
+var CLIENT_ID = (function () {
+  try {
+    var k = 'pumpvision_client_id', v = sessionStorage.getItem(k);
+    if (v) return v;
+    v = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    sessionStorage.setItem(k, v);
+    return v;
+  } catch (e) {
+    return 'web_' + Date.now().toString(36);
+  }
+})();
 var state = {
   device: null,
   current: { t: null, h: null, fan: false, pump: false, mode: '--', comm_ok: false, failsafe: false, emergency_lock: false, heartbeat: 0 },
+  // H-Skew: lệch đồng hồ (ms) và cờ cảnh báo lệch
+  clockOffset: 0, clockSkew: 0, _skewWarned: 0,
+  // 2992: form cấu hình đang được người dùng sửa → không được ghi đè
+  settingsDirty: false,
+  // C-4: theo dõi slot /control (HMI không xoá emergency_cmd) để nút "Giải
+  // phóng" luôn bấm được — nếu không, ERP mất hoàn toàn khả năng điều khiển.
+  controlEmergency: false,
+  // R-02/R-03: ngưỡng ĐANG CHẠY (nguồn sự thật = /settings_ack của HMI)
+  runningSettings: null, readError: false,
   history: [],
   alarms: [],
-  seenKeys: {},
+  seenKeys: {},   // M-23r: giới hạn số key (xem trimSeenKeys)
+  alarmSeen: {},  // C5: phải nằm trong state — biến cục bộ trong startRealtime
+                  // khiến nhánh cắt ở trimSeenKeys() là DEAD CODE (typeof luôn
+                  // "undefined") ⇒ chỗ rò alarmSeen phình vô hạn theo tuổi tab.
   lastUpdate: null,
   lastHeartbeat: 0,            // M1: heartbeat HMI lần cuối nhận được (đổi → reset age)
   startTime: Date.now(),
@@ -1968,7 +2040,10 @@ function renderDashboard() {
   // phụ thuộc số liệu cảm biến; đặt SAU guard thì chúng giữ màu xanh tĩnh
   // trong HTML cả khi offline / chưa có dữ liệu.
   var age = state.lastUpdate ? (Date.now() - state.lastUpdate)/1000 : 999;
-  var rs485Ok = state.current.comm_ok !== false && age < 15;
+  // M-30r: ngưỡng "stale" phải khớp HMI (HMI chấp nhận lệnh tới 300 s
+  // theo CLOCK_SKEW_TOL_MS) — cảnh báo sớm hơn sẽ khiến người dùng tưởng
+  // mất liên kết trong khi HMI vẫn nhận lệnh.
+  var rs485Ok = state.current.comm_ok !== false && age < 45;
   setClass('st-rs485', 'status-led ' + (rs485Ok ? 'on' : 'err'));
   setText('st-rs485-val', rs485Ok ? 'OK' : 'Timeout');
 
@@ -1985,28 +2060,46 @@ function renderDashboard() {
 
   // LƯU Ý: isFinite(null) === true (null → 0) nên PHẢI kiểm tra typeof,
   // nếu không sẽ lao vào t.toFixed(1) trên null khi Firebase chưa có dữ liệu.
-  if (typeof c.t !== 'number' || !isFinite(c.t)) return;
-  if (typeof c.h !== 'number' || !isFinite(c.h)) return;
+  // W-07: KHÔNG return cả hàm khi thiếu 1 field — chỉ bỏ qua phần cần số
+  // liệu đó, còn KPI/LED/bảng vẫn phải cập nhật (trước đây 1 field thiếu
+  // ⇒ TOÀN BỘ dashboard đóng băng vĩnh viễn).
+  var hasT = (typeof c.t === 'number' && isFinite(c.t));
+  var hasH = (typeof c.h === 'number' && isFinite(c.h));
+  // M-31r: KHÔNG return sớm — KPI/LED/bảng vẫn phải render với phần có
+  // số liệu (thiếu 1 field không được làm cảm biến chết ⇒ KPI đứng 0%).
+  // C4: KHÔNG return sớm khi mất CẢ 2 cảm biến — KPI + badge phải hiện
+  // "chưa có dữ liệu" (L-48) thay vì giữ số cũ / "✓ Bình thường" (vi phạm
+  // chính comment W-07 ngay phía trên). Phần dưới xử lý an toàn cả t=null,h=null.
 
-  var t = c.t, h = c.h, fan = c.fan, pump = c.pump;
+  var t = hasT ? c.t : null, h = hasH ? c.h : null, fan = c.fan, pump = c.pump;
   var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
 
-  setHTML('kpi-t-val', t.toFixed(1) + '<span class="kpi-unit">°C</span>');
-  var tClass = t >= th.pump_on ? 'red' : t >= th.fan_on ? 'orange' : 'green';
+  setHTML('kpi-t-val', (t === null ? '--' : t.toFixed(1)) + '<span class="kpi-unit">°C</span>');
+  // L-48: KHÔNG kết luận "bình thường"/"quá nhiệt" khi CHƯA CÓ dữ liệu —
+  // null >= ngưỡng là false ⇒ rơi vào "✓ Bình thường" ⇒ báo cảm biến bình
+  // thường khi thực ra chưa có số liệu.
+  var tClass = (t === null) ? 'gray' : t >= th.pump_on ? 'red' : t >= th.fan_on ? 'orange' : 'green';
   setClass('kpi-t-val', 'kpi-value ' + tClass);
   setClass('kpi-t-bar', 'kpi-bar-fill ' + tClass);
-  setStyle('kpi-t-bar', 'width', Math.min(100, (t/60)*100) + '%');
+  // L-01: không có số liệu ⇒ thanh progress 0% là nhiễu thị giác ⇒ mờ đi
+  setStyle('kpi-t-bar', 'width', (t === null ? '0%' : Math.min(100, (t/60)*100) + '%'));
+  try { document.getElementById('kpi-t-bar').style.opacity = t === null ? '0.25' : '1'; } catch (e) {}
+  // LOW-5/L-68: t===null ⇒ thanh 0% + màu gray (không vẽ thanh "bình thường"
+  // cạnh ô không có dữ liệu).
 
   var tBadge = $('kpi-t-badge');
   if (tBadge) {
-    if (t >= th.pump_on) { tBadge.className = 'kpi-badge down'; tBadge.textContent = '⚠ Quá nhiệt'; }
+    if (t === null) { tBadge.className = 'kpi-badge gray'; tBadge.textContent = '— Chưa có dữ liệu'; }
+    else if (t >= th.pump_on) { tBadge.className = 'kpi-badge down'; tBadge.textContent = '⚠ Quá nhiệt'; }
     else if (t >= th.fan_on) { tBadge.className = 'kpi-badge neutral'; tBadge.textContent = '▲ Cao'; }
     else { tBadge.className = 'kpi-badge up'; tBadge.textContent = '✓ Bình thường'; }
   }
 
-  setHTML('kpi-h-val', h.toFixed(1) + '<span class="kpi-unit">%</span>');
-  setStyle('kpi-h-bar', 'width', Math.min(100, h) + '%');
-  setText('kpi-h-badge', h < 30 ? 'Khô' : h > 70 ? 'Ẩm cao' : 'Bình thường');
+  setHTML('kpi-h-val', (h === null ? '--' : h.toFixed(1)) + '<span class="kpi-unit">%</span>');
+  setStyle('kpi-h-bar', 'width', (h === null ? 0 : Math.min(100, h)) + '%');
+  // L-48: null < 30 là TRUE ⇒ hiện "Khô" khi chưa có dữ liệu ⇒ chặn.
+  // L-48: null < 30 la TRUE -> hien "Kho" khi chua co du lieu -> chan.
+  setText('kpi-h-badge', h === null ? '— Chưa có dữ liệu' : h < 30 ? 'Khô' : h > 70 ? 'Ẩm cao' : 'Bình thường');
 
   setText('kpi-fan-val', fan ? 'ON' : 'OFF');
   setClass('kpi-fan-val', 'kpi-value ' + (fan ? 'blue' : 'off'));
@@ -2028,12 +2121,14 @@ function renderAssets() {
   var el = $('asset-list');
   if (!el) return;
   var c = state.current;
-  if (c.t === null) return;
+  // W-07: chỉ bỏ qua khi THIẾU CẢ hai số — thiếu 1 field không được làm
+  // đóng băng toàn bộ phần còn lại (các ô thiếu hiện "--").
+  if (c.t === null && c.h === null) return;
   var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
   var items = [
-    { name: 'Nhiệt độ (SHT20)', val: c.t.toFixed(1) + ' °C', pct: Math.min(100, (c.t/60)*100),
+    { name: 'Nhiệt độ (SHT20)', val: (c.t === null ? '--' : c.t.toFixed(1)) + ' °C', pct: (c.t === null ? 0 : Math.min(100, (c.t/60)*100)),
       cls: c.t >= th.pump_on ? 'danger' : c.t >= th.fan_on ? 'warning' : 'green' },
-    { name: 'Độ ẩm (SHT20)', val: c.h.toFixed(1) + ' %', pct: Math.min(100, c.h), cls: '' },
+    { name: 'Độ ẩm (SHT20)', val: (c.h === null ? '--' : c.h.toFixed(1)) + ' %', pct: (c.h === null ? 0 : Math.min(100, c.h)), cls: '' },
     { name: 'Quạt 12V (CH2)', val: c.fan ? 'Đang chạy' : 'Dừng', pct: c.fan ? 100 : 5, cls: c.fan?'green':'' },
     { name: 'Bơm MB370 (CH1)', val: c.pump ? 'Đang phun' : 'Dừng', pct: c.pump ? 100 : 5, cls: c.pump?'danger':'' }
   ];
@@ -2090,8 +2185,8 @@ function renderMonitoring() {
     var r = rows[i];
     html += '<tr>';
     html += '<td class="mono" style="color:var(--text-mute);font-size:12px">' + fmtDT(r.time) + '</td>';
-    html += '<td class="mono" style="font-weight:700">' + num(r.t, 0).toFixed(1) + ' °C</td>';
-    html += '<td class="mono">' + num(r.h, 0).toFixed(1) + ' %</td>';
+    html += '<td class="mono" style="font-weight:700">' + (r.t === null || r.t === undefined ? '--' : num(r.t, 0).toFixed(1)) + ' °C</td>';
+    html += '<td class="mono">' + (r.h === null || r.h === undefined ? '--' : num(r.h, 0).toFixed(1)) + ' %</td>';
     html += '<td><span class="sev-pill ' + (r.fan ? 'ok' : 'off') + '">' + (r.fan ? 'ON' : 'OFF') + '</span></td>';
     html += '<td><span class="sev-pill ' + (r.pump ? 'critical' : 'off') + '">' + (r.pump ? 'ON' : 'OFF') + '</span></td>';
     html += '<td class="hide-mobile"><span class="sev-pill ' + (r.mode === 'AUTO' ? 'info' : 'high') + '">' + safe(r.mode, 'AUTO') + '</span></td>';
@@ -2115,10 +2210,12 @@ function renderDevices() {
   setText('dev-pump-off', 'T ≤ ' + num(s.pump_off, 42).toFixed(1) + '°C');
   if (typeof c.t !== 'number' || !isFinite(c.t)) return;
   if (typeof c.h !== 'number' || !isFinite(c.h)) return;
-  setText('dev-sht-t', c.t.toFixed(1) + ' °C');
-  setText('dev-sht-h', c.h.toFixed(1) + ' %');
+  setText('dev-sht-t', (c.t === null ? '--' : c.t.toFixed(1)) + ' °C');
+  setText('dev-sht-h', (c.h === null ? '--' : c.h.toFixed(1)) + ' %');
   // CH1 = bơm + còi, CH2 = quạt (khớp Config.COIL_CH1 / COIL_CH2 phía HMI).
   setText('dev-rly-ch1', c.pump ? 'ON' : 'OFF');
+  // W-25: CH1 = BƠM + CÒI dùng chung 1 relay ⇒ trạng thái hiển thị theo bơm;
+  // ghi rõ để không tưởng còi đang kêu mà panel báo OFF.
   setText('dev-rly-ch2', c.fan ? 'ON' : 'OFF');
   setText('dev-fan-status', c.fan ? 'Đang quay' : 'Đứng yên');
   setText('dev-pump-status', c.pump ? 'Đang phun' : 'Đứng yên');
@@ -2127,6 +2224,16 @@ function renderDevices() {
 /* =====================================================================
    RENDER: ALARMS
    ===================================================================== */
+// M-23r: cắt bớt seenKeys (không phình theo tuổi tab).
+function trimSeenKeys() {
+  var ks = Object.keys(state.seenKeys);
+  if (ks.length > 600) ks.slice(0, ks.length - 600).forEach(function (k) { delete state.seenKeys[k]; });
+  // M-23r: chỗ RÒ THẬT là alarmSeen (biến cục bộ trong initFirebase) — cắt nó
+  // luôn, nếu không nó phình theo tuổi tab.
+  var am = state.alarmSeen || (state.alarmSeen = {});
+  var ak = Object.keys(am);
+  if (ak.length > 600) ak.slice(0, ak.length - 600).forEach(function (k) { delete am[k]; });
+}
 function renderAlarms() {
   var tbody = $('alarm-table');
   if (!tbody) return;
@@ -2169,6 +2276,7 @@ function alarmSeverity(type) {
     case 'COMM_LOSS': return 'HIGH';
     case 'FAN_ACTUATOR_FAIL': return 'HIGH';
     case 'PUMP_ACTUATOR_FAIL': return 'HIGH';
+    case 'SLAVE_ERROR': return 'HIGH';      // slave trả exception frame — bus khỏe, không cắt bơm
     case 'ESTOP_RELAY_FAIL': return 'CRITICAL';   // relay E-STOP không ngắt được = mất chức năng an toàn
     default: return 'INFO';
   }
@@ -2196,7 +2304,7 @@ function renderAlarmStats() {
   setText('al-comm', comm);
   setText('al-24h', d24);
   // N6: nhãn theo ngưỡng BÁO CHÁY ĐANG CHẠY (không còn "≥ 50°C" cứng).
-  setText('al-fire-sub', 'Nhiệt độ ≥ ' + (state.settings || {}).pump_on + '°C');
+  setText('al-fire-sub', 'Nhiệt độ ≥ ' + num((state.settings || {}).pump_on, 50).toFixed(1) + '°C');
 
   var badge = $('nav-alarm-badge');
   var seenTs = Number(state.lastSeenAlarmTs || 0);
@@ -2228,23 +2336,28 @@ function renderReports() {
   if (!hist.length) return;
   var temps = [], hums = [], sumT = 0, sumH = 0;
   for (var i = 0; i < hist.length; i++) {
-    temps.push(hist[i].t); hums.push(hist[i].h);
-    sumT += hist[i].t; sumH += hist[i].h;
+    // ERP-1: bản ghi THIẾU field ⇒ t/h = null ⇒ đẩy vào min/max/avg sẽ ra
+    // NaN ⇒ báo cáo hiện "NaN °C". Chỉ lấy bản ghi có số liệu thật.
+    var ti = num(hist[i].t, null), hi = num(hist[i].h, null);
+    if (ti !== null) { temps.push(ti); sumT += ti; }
+    if (hi !== null) { hums.push(hi); sumH += hi; }
   }
-  var avgT = sumT / temps.length;
-  var avgH = sumH / hums.length;
-  var minT = Math.min.apply(null, temps);
-  var maxT = Math.max.apply(null, temps);
-  var minH = Math.min.apply(null, hums);
-  var maxH = Math.max.apply(null, hums);
+  if (!temps.length && !hums.length) return;
+  var avgT = temps.length ? sumT / temps.length : null;
+  var avgH = hums.length ? sumH / hums.length : null;
+  var minT = temps.length ? Math.min.apply(null, temps) : null;
+  var maxT = temps.length ? Math.max.apply(null, temps) : null;
+  var minH = hums.length ? Math.min.apply(null, hums) : null;
+  var maxH = hums.length ? Math.max.apply(null, hums) : null;
+  var fmt1 = function (v) { return v === null ? "--" : v.toFixed(1); };
 
-  setText('rp-t-avg', avgT.toFixed(1) + ' °C');
-  setText('rp-h-avg', avgH.toFixed(1) + ' %');
-  setText('rp-t-range', minT.toFixed(1) + ' → ' + maxT.toFixed(1) + ' °C');
-  setText('rp-h-range', minH.toFixed(1) + ' → ' + maxH.toFixed(1) + ' %');
+  setText('rp-t-avg', fmt1(avgT) + ' °C');
+  setText('rp-h-avg', fmt1(avgH) + ' %');
+  setText('rp-t-range', fmt1(minT) + ' → ' + fmt1(maxT) + ' °C');
+  setText('rp-h-range', fmt1(minH) + ' → ' + fmt1(maxH) + ' %');
   setText('rp-points', hist.length);
-  setText('rp-t-max', maxT.toFixed(1) + ' °C');
-  setText('rp-t-min', minT.toFixed(1) + ' °C');
+  setText('rp-t-max', fmt1(maxT) + ' °C');
+  setText('rp-t-min', fmt1(minT) + ' °C');
 
   var fanCount = 0, pumpCount = 0;
   for (var j = 0; j < hist.length; j++) {
@@ -2365,7 +2478,9 @@ function playBeep(sev) {
 function csvCell(v) {
   if (v == null) return '';
   var s = String(v);
-  if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+  // R-10: giá trị BẮT ĐẦU bằng khoảng trắng cũng là công thức (Excel tự
+  // cắt khoảng trắng khi mở) ⇒ escape luôn nếu có khoảng trắng đầu.
+  if (/^[\s=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
   return '"' + s.replace(/"/g, '""') + '"';
 }
 
@@ -2380,8 +2495,9 @@ window.exportCSV = function(kind) {
     filename = 'alarms_' + Date.now() + '.csv';
   } else {
     csv = 'Timestamp,Temperature(C),Humidity(%),Fan,Pump,Mode\n';
-    csv += state.history.map(function(p) {
-      return csvCell(p.time instanceof Date ? p.time.toISOString() : '') + ',' + csvCell(p.t.toFixed(2)) + ',' + csvCell(p.h.toFixed(2)) + ',' +
+    // R-01: bỏ điểm tạm (chưa có key) — nếu không, CSV có dòng 0 °C rác
+    csv += state.history.filter(function(p){ return !!p.key; }).map(function(p) {
+      return csvCell(p.time instanceof Date ? p.time.toISOString() : '') + ',' + csvCell(Number(p.t).toFixed(2)) + ',' + csvCell(Number(p.h).toFixed(2)) + ',' +
              csvCell(p.fan ? 'ON' : 'OFF') + ',' + csvCell(p.pump ? 'ON' : 'OFF') + ',' + csvCell(p.mode);
     }).join('\n');
     filename = 'telemetry_' + Date.now() + '.csv';
@@ -2402,7 +2518,9 @@ window.exportJSON = function() {
 };
 
 function download(content, filename, mime) {
-  var blob = new Blob([content], { type: mime });
+  // BOM UTF-8 CHỈ cho CSV (Excel cần BOM để đọc tiếng Việt); JSON không
+  // được có BOM (một số parser sẽ lỗi).
+  var blob = new Blob([(mime === 'text/csv' ? '﻿' : '') + content], { type: mime });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
@@ -2448,8 +2566,17 @@ function commandSequence() {
 
 function renderControlPanel() {
   var c = state.current || {};
-  var mode = c.mode === 'MANUAL' ? 'MANUAL' : 'AUTO';
-  var locked = !!c.emergency_lock;
+  // L-58: mode lạ / chưa có ⇒ KHÔNG map thành 'AUTO' — nút AUTO sáng lên
+  // trước khi có snapshot đầu tiên ⇒ khẳng định trạng thái chưa biết.
+  var mode = (c.mode === 'MANUAL' || c.mode === 'AUTO') ? c.mode : '';
+  // W-EstopInvisible: khoá E-STOP đang GỬI (chờ ACK) cũng phải hiện ra —
+  // trước đây khoá "vô hình" 12 s ⇒ người dùng tưởng E-STOP chưa chạy.
+  // C-4: /control có thể LATCH emergency_cmd:true (HMI không xoá slot) — nếu
+  // board đã reboot (mất khoá) thì nút "Giải phóng" bị disable ⇒ ERP MẤT
+  // HOÀN TOÀN khả năng điều khiển, không có lối thoát. Theo dõi slot /control
+  // và cho bật nút khi slot còn lệnh E-STOP.
+  var slotEstop = !!state.controlEmergency;
+  var locked = !!c.emergency_lock || !!state.estopUnacked || slotEstop;
   var autoBtn = $('ctrl-auto'), manualBtn = $('ctrl-manual');
   var fanTgl = $('vault-fan'), pumpTgl = $('vault-pump');
   var estopBtn = $('ctrl-estop'), clearBtn = $('ctrl-clear-estop');
@@ -2461,7 +2588,9 @@ function renderControlPanel() {
      khóa E-STOP / không phải MANUAL / failsafe (bơm) — native chặn click. */
   if (fanTgl) { fanTgl.checked = !!c.fan; fanTgl.disabled = locked || mode !== 'MANUAL'; vaultLock(fanTgl); }
   if (pumpTgl) { pumpTgl.checked = !!c.pump; pumpTgl.disabled = locked || mode !== 'MANUAL' || !!c.failsafe; vaultLock(pumpTgl); }
-  if (estopBtn) { estopBtn.disabled = locked; estopBtn.className = 'btn btn-ghost ctrl-btn' + (locked ? ' is-locked' : ''); }
+  // H-13r: nút E-STOP KHÔNG được khoá khi đang locked — phải "gửi lại
+  // E-STOP" được (toast cũng dặn vậy) ⇒ re-assert luôn an toàn.
+  if (estopBtn) { estopBtn.disabled = false; estopBtn.className = 'btn btn-ghost ctrl-btn' + (locked ? ' is-locked' : ''); }
   if (clearBtn) { clearBtn.disabled = !locked; clearBtn.className = 'btn ' + (locked ? 'btn-primary' : 'btn-ghost') + ' ctrl-btn'; }
 }
 /* Gắn visual khóa (.is-locked) lên label vault toggle theo input.disabled */
@@ -2488,8 +2617,10 @@ function setStatus(t) { var e = $('cmd-status'); if (e) e.textContent = t; }
       (giá trị cũ còn đọc trong /system_status) và TẮT NGƯỢC quạt vừa bật. */
 function applyLocalState(p) {
   if (p.mode_cmd) state.current.mode = p.mode_cmd;
-  state.current.fan = !!p.fan_cmd;
-  state.current.pump = !!p.pump_cmd;
+  // W-01: chỉ cập nhật trường CÓ trong frame — frame không mang lệnh tải
+  // (vd đổi chế độ) thì không được tự tắt hiển thị quạt/bơm.
+  if (typeof p.fan_cmd === 'boolean') state.current.fan = p.fan_cmd;
+  if (typeof p.pump_cmd === 'boolean') state.current.pump = p.pump_cmd;
   // M3: KHÔNG bật khóa ở đây — chỉ applyAckState (sau ACK thật) hoặc
   // system_status mới đặt trạng thái khóa; nút Clear không bấm được sớm.
   // E2: render là việc HIỂN THỊ — không được ném lỗi ra đường ra lệnh.
@@ -2520,6 +2651,8 @@ function restoreLocalState(s) {
 function clearCommandWatch() {
   if (state.pendingCmd && state.pendingCmd.timer) clearTimeout(state.pendingCmd.timer);
   if (state.pendingCmd && state.pendingCmd.unsub) { try { state.pendingCmd.unsub(); } catch (e) {} }
+  // L-03: xoá snapshot cũ (giữ mãi trong RAM ⇒ rò bộ nhớ nhỏ)
+  if (state.pendingCmd) state.pendingCmd.prev = null;
   state.pendingCmd = null;
 }
 /* BUG3: /control_ack chỉ có 1 key — client khác gửi lệnh cùng lúc ghi đè
@@ -2531,8 +2664,11 @@ function handleAck(v) {
   var seq = num(v.command_sequence, 0);
   state.controlAck = v;
   // BUG4: cùng seq nhưng KHÁC client_id = ACK cho lệnh của tab/client khác.
+  // M-26: phải khớp client_id TUYỆT ĐỐI — ACK không có client_id (legacy /
+  // client khác) KHÔNG được coi là "của mình" (nếu không, ERP hiện "ACK · OK"
+  // cho lệnh chưa từ gửi + xoá cờ estopUnacked).
   var isMine = !!(state.pendingCmd && seq === state.pendingCmd.seq &&
-                  (!v.client_id || v.client_id === CLIENT_ID));
+                  v.client_id === CLIENT_ID);
   // Snapshot ĐẦU TIÊN khi mở trang = ACK của phiên làm việc trước đó.
   // Chỉ ghi nhận thứ tự, KHÔNG hiện "ACK · OK" như thể vừa gửi lệnh.
   if (!state.ackBaselineReady && !isMine) {
@@ -2594,12 +2730,40 @@ function startAckTimeout(seq) {
   }, ACK_TIMEOUT_MS);
 }
 
+/* W-01: frame CHỈ mang ý định của người dùng. Trước đây payload luôn điền
+   fan_cmd/pump_cmd lấy từ state.current — mà state.current mặc định
+   fan:false/pump:false khi chưa có /system_status ⇒ LỆNH ĐẦU TIÊN từ web gửi
+   fan_cmd:false,pump_cmd:false ⇒ ESP32 TẮT cả quạt lẫn bơm đang chạy.
+   Tách thành hàm thuần để kiểm chứng được (không ghi Firebase). */
+function buildControlPayload(fields) {
+  fields = fields || {};
+  var payload = {
+    command_sequence: commandSequence(),
+    issued_at: new Date().toISOString(),
+    // H-Skew: bù lệch đồng hồ trình duyệt với HMI (ước lượng từ
+    // /system_status.timestamp) — nếu không, lệch > 30 s ⇒ HMI từ chối MỌI
+    // lệnh (kể cả E-STOP) với thông báo sai.
+    issued_at_ms: Date.now() + (state.clockOffset || 0),
+    issued_by: 'ERP-WEB',
+    client_id: CLIENT_ID
+  };
+  if (fields.mode_cmd !== undefined) payload.mode_cmd = fields.mode_cmd;
+  if (typeof fields.fan_cmd === 'boolean') payload.fan_cmd = fields.fan_cmd;
+  if (typeof fields.pump_cmd === 'boolean') payload.pump_cmd = fields.pump_cmd;
+  if (fields.emergency_cmd !== undefined) payload.emergency_cmd = !!fields.emergency_cmd;
+  if (fields.clear_emergency !== undefined) payload.clear_emergency = !!fields.clear_emergency;
+  return payload;
+}
+
 function writeControl(fields, opts) {
   opts = opts || {};
   // N4: offline thì TUYỆT ĐỐI không báo như đã gửi (kể cả E-STOP).
   if (!state.db || !state.firebaseOk) {
     showToast('critical', 'Đang offline', 'Lệnh CHƯA được gửi tới HMI.');
     setStatus('Offline · lệnh CHƯA gửi');
+    // H-11r: lệnh CHƯA gửi ⇒ KHÔNG được để cờ "E-STOP đang chờ" bật
+    // ⇒ ERP kẹt "LOCKED" + disable nút, phải tải lại trang mới lấy lại quyền.
+    state.estopUnacked = false;
     return false;
   }
   // H2: chỉ một lệnh được chờ ACK — E-STOP (urgent) luôn được phép đi trước.
@@ -2607,23 +2771,16 @@ function writeControl(fields, opts) {
     showToast('warning', 'Đang chờ ACK', 'Chờ HMI xác nhận lệnh trước.');
     return false;
   }
-  if (!opts.urgent && !pwGate(function () { writeControl(fields, opts); })) return false; var c = state.current;
-  var payload = {
-    command_sequence: commandSequence(),
-    mode_cmd: fields.mode_cmd || c.mode || 'AUTO',
-    fan_cmd: typeof fields.fan_cmd === 'boolean' ? fields.fan_cmd : !!c.fan,
-    pump_cmd: typeof fields.pump_cmd === 'boolean' ? fields.pump_cmd : !!c.pump,
-    emergency_cmd: !!fields.emergency_cmd,
-    clear_emergency: !!fields.clear_emergency,
-    issued_at: new Date().toISOString(),
-    issued_at_ms: Date.now(),
-    issued_by: 'ERP-WEB',
-    client_id: CLIENT_ID
-  };
+  if (!opts.urgent && !pwGate(function () { writeControl(fields, opts); })) return false;
+  var payload = buildControlPayload(fields);
 
   // Optimistic UI CÓ bản sao để hoàn tác nếu lệnh không tới HMI (BUG3);
   // L4: E-STOP chen ngang → prev lấy của lệnh ĐANG CHỜ; khóa do applyAckState/system_status (M3).
-  var prevSnap = (state.pendingCmd && state.pendingCmd.prev) || snapshotLocalState();
+  // W-19: lệnh URGENT (E-STOP) phải rollback về snapshot TẠI THỜI ĐIỂM GHI —
+  // nếu dùng prev của lệnh đang chờ thì khi timeout sẽ khôi phục trạng thái
+  // cũ hơn cả lệnh vừa ghi (E-STOP chen ngang).
+  var prevSnap = opts.urgent ? snapshotLocalState()
+             : ((state.pendingCmd && state.pendingCmd.prev) || snapshotLocalState());
   applyLocalState(payload);
   watchAck(payload.command_sequence, prevSnap, payload.emergency_cmd);
   startAckTimeout(payload.command_sequence);   // H2: chạy NGAY, không đợi .then
@@ -2631,6 +2788,11 @@ function writeControl(fields, opts) {
 
   // T7: transaction — không bao giờ đè lệnh khác còn chờ ACK (<30s) và
   // không đè emergency_cmd:true (trừ khi chính nó là Clear/E-STOP).
+  // B1: `cur` là tham số của callback transaction() ⇒ CHỈ có scope trong
+  // callback đó. Dùng `cur` ở .then() ⇒ ReferenceError "cur is not defined"
+  // ⇒ mọi lệnh bị từ chối đều ném lỗi (bị .catch() nuốt) thay vì hiện
+  // toast đúng nguyên nhân. Giữ lại bằng biến ngoài txCur.
+  var txCur = null;
   // BUG1: fresh phải có CẶN DƯỚI — issued_at TƯƠNG LAI (đồng hồ lệch) làm
   // age âm → "tươi mãi", lệnh rác giữ /control → chặn cả Clear E-STOP.
   // I1+BUG4: ours = cùng client_id (mỗi tab 1 ID ngẫu nhiên, 2 tab khác nhau
@@ -2638,14 +2800,38 @@ function writeControl(fields, opts) {
   // pendingCmd đã timeout: trước đây lệnh cũ chưa ACK (<30s) của chính tab này
   // từng khiến retry bị từ chối tới 30s ("Có lệnh khác đang chờ HMI" khó hiểu).
   state.db.ref('control').transaction(function(cur) {
+    txCur = cur;   // B1: giữ lại giá trị của slot /control (ngoài scope callback)
     if (cur && typeof cur === 'object') {
       var curSeq = num(cur.command_sequence, 0);
       var ours = cur.client_id === CLIENT_ID;
-      var age = Date.now() - num(cur.issued_at_ms, 0);
+      // W-SkewGuard: tính "tuổi" lệnh trong miền đồng hồ của HMI (đã bù lệch)
+      // — nếu dùng đồng hồ trình duyệt thì lệch giờ làm fresh=false ⇒ guard
+      // tự tắt ⇒ ghi đè lệnh của client khác.
+      // W-16: frame KHÔNG có issued_at_ms ⇒ coi là "fresh-but-unknown" (đừng
+      // coi như đã hết hạn, sẽ bỏ qua guard và ghi đè lệnh client khác).
+      var issuedAt = num(cur.issued_at_ms, 0);
+      // M-34r: frame KHÔNG có issued_at_ms ⇒ không biết tuổi ⇒ coi là KHÔNG
+      // fresh (giữ guard "đừng ghi đè lệnh đang chờ"). Trước đây age=0 ⇒
+      // fresh=TRUE ⇒ guard tự tắt ⇒ ghi đè lệnh của client khác.
+      var age = issuedAt ? (Date.now() + (state.clockOffset || 0)) - issuedAt : 1e9;
       var fresh = age > -5000 && age < 30000;
-      var plausible = curSeq <= Date.now() + 300000;   // seq tương lai >5 phút = rác
+      // M-19r: seq nằm trong MIỀN ĐỒNG HỒ CỦA CLIENT ⇒ so với đồng hồ
+      // trình duyệt (KHÔNG cộng offset của HMI — cộng sai sẽ tự tắt guard
+      // "đừng ghi đè lệnh đang chờ" khi lệch > 5 phút).
+      var plausible = curSeq <= Date.now() + 300000;
       if (cur.emergency_cmd === true && !payload.emergency_cmd && !payload.clear_emergency) return;
-      if (!payload.emergency_cmd && curSeq > state.lastAckSequence && fresh && plausible && !ours) return;
+      // H-12r/CRIT-2: chặn lệnh GỠ ở TẦNG TRANSACTION (bảo vệ mọi tab /
+      // client khác — cờ estopUnacked chỉ là per-tab). Chỉ cho gỡ khi board đã
+      // XÁC NHẬN khoá (emergency_lock=true trong /system_status); nếu chưa,
+      // lệnh gỡ sẽ xoá frame emergency_cmd:true trước khi HMI kịp thấy ⇒
+      // board không bao giờ khoá ⇒ bơm vẫn chạy.
+      if (payload.clear_emergency && cur.emergency_cmd === true &&
+          !state.current.emergency_lock) return;
+      // C-4r: lenh GIA khoa E-STOP (clear_emergency) phai duoc MIEN guard
+      // "lenh khac dang cho" — neu khong, no abort ~30 s ⇒ ERP mat kha nang
+      // dieu khien vinh vien (lockout).
+      if (!payload.emergency_cmd && !payload.clear_emergency &&
+          curSeq > state.lastAckSequence && fresh && plausible && !ours) return;
     }
     return payload;
   }).then(function(res) {
@@ -2653,7 +2839,13 @@ function writeControl(fields, opts) {
       setStatus('Lệnh bị từ chối');
       if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) restoreLocalState(prevSnap);
       if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) clearCommandWatch();
-      showToast('warning', 'Có lệnh khác đang chờ HMI', 'Không ghi đè — thử lại sau giây lát.');
+      // M-18r: nêu đúng nguyên nhân (slot E-STOP bị latch / lệnh khác đang
+      // chờ) thay vì luôn nói "có lệnh khác đang chờ" (chẩn đoán sai đúng ca
+      // gây lockout).
+      showToast('warning', 'Lệnh bị từ chối',
+        (txCur && txCur.emergency_cmd === true)
+          ? 'Slot /control vẫn giữ lệnh E-STOP — HMI chưa xác nhận khoá, không thể ghi đè.'
+          : 'Có lệnh khác đang chờ HMI — không ghi đè, thử lại sau giây lát.');
       return;
     }
     setStatus('Đã gửi · chờ ACK');
@@ -2661,6 +2853,10 @@ function writeControl(fields, opts) {
     setStatus('Lỗi gửi');
     if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) restoreLocalState(prevSnap);
     if (state.pendingCmd && state.pendingCmd.seq === payload.command_sequence) clearCommandWatch();
+    // H-11/H-11r-ov: chỉ XOÁ cờ "E-STOP đang chờ xác nhận" khi chính lệnh
+    // E-STOP gửi lỗi. Xoá cho MỌI lệnh lỗi sẽ tắt cảnh báo E-STOP và mở
+    // lại điều khiển trong khi số phận E-STOP vẫn chưa rõ.
+    if (payload.emergency_cmd) state.estopUnacked = false;
     showToast('critical', 'Không gửi được lệnh', err && err.message ? err.message : String(err));
   });
   return true;
@@ -2679,7 +2875,7 @@ window.toggleRemote = function(kind) {
     showToast('warning', 'Chế độ AUTO', 'Hãy chuyển sang MANUAL trước khi điều khiển quạt/bơm.');
     return;
   }
-  if (kind === 'fan') writeControl({mode_cmd:'MANUAL', fan_cmd: !state.current.fan, pump_cmd: state.current.pump});
+  if (kind === 'fan') writeControl({mode_cmd:'MANUAL', fan_cmd: !state.current.fan});
   if (kind === 'pump') {
     // I3: interlock chỉ chặn chuyển sang BẬT — lệnh TẮT bơm phải đi được mọi
     // lúc (đang failsafe/mất sensor mà muốn TẮT từ web là quyền hợp lệ;
@@ -2688,7 +2884,7 @@ window.toggleRemote = function(kind) {
       showToast('warning', 'Interlock an toàn', 'Không cho phép bật bơm khi sensor/RS-485 chưa hợp lệ.');
       return;
     }
-    writeControl({mode_cmd:'MANUAL', fan_cmd: state.current.fan, pump_cmd: !state.current.pump});
+    writeControl({mode_cmd:'MANUAL', pump_cmd: !state.current.pump});
   }
 };
 /* Vault toggle: checkbox tự lật UI TRƯỚC khi guard (E-STOP/AUTO/interlock)
@@ -2703,6 +2899,7 @@ window.vaultToggle = function(kind, input) {
 };
 window.sendEmergency = function(on) {
   // H2: E-STOP luôn đi trước (urgent) — không bị chặn bởi lệnh đang chờ ACK.
+  if (on) state.estopUnacked = true;   // W-EstopInvisible: hiện khoá NGAY (không chờ 12 s)
   writeControl({mode_cmd:'MANUAL', emergency_cmd: !!on, fan_cmd:false, pump_cmd:false},
                {urgent: true});
 };
@@ -2712,9 +2909,20 @@ window.clearEmergency = function() {
   if (state.estopUnacked && !state.current.emergency_lock) {
     showToast('warning', 'E-STOP CHƯA XÁC NHẬN',
       'Chưa rõ E-STOP đã kích hoạt — gửi lại E-STOP hoặc chờ HMI xác nhận trước khi giải phóng.');
+    // CRIT-2: /control là 1 SLOT — ghi lệnh gỡ lúc này sẽ XOÁ frame
+    // emergency_cmd:true trước khi HMI kịp thấy ⇒ board KHÔNG BAO GIỜ khoá
+    // ⇒ bơm vẫn chạy trong khi ERP hiện đã giải phóng. Chặn gỡ cho tới
+    // khi HMI xác nhận (1–2 s) — lệnh E-STOP được giữ nguyên trong slot.
     return;
   }
-  writeControl({mode_cmd:'MANUAL', clear_emergency:true, fan_cmd: state.current.fan, pump_cmd:false});
+  // W-02: frame Clear PHẢI ép TẮT cả 2 tải. ESP32 chỉ gỡ khoá khi cả hai
+  // tải đang OFF trong state của nó; gửi fan_cmd theo mirror cũ có thể khiến
+  // Clear bị từ chối vĩnh viễn ⇒ E-STOP thành lockout (ERP không có đường
+  // tắt tải lúc đang khoá vì toggle bị disable).
+  // W-ClearNotUrgent: lệnh GỠ E-STOP phải đi trước (urgent) — nếu không, nó
+  // có thể bị rơi khi còn lệnh khác đang chờ ACK ⇒ khoá kẹt.
+  writeControl({mode_cmd:'MANUAL', clear_emergency:true, fan_cmd:false, pump_cmd:false},
+               {urgent: true});
 };
 
 // N6: đọc số an toàn — ô TRỐNG → NaN (Number('') === 0 từng bị coi là 0°C
@@ -2745,18 +2953,46 @@ window.saveSettings = function() {
     return;
   }
   var keys = ['fan_on','fan_off','pump_on','pump_off','max_timeouts'], s0 = state.settings || {};
-  if (keys.every(function(k){ return s0[k] === vals[k]; })) { showToast('info','Cấu hình đã khớp','Không có thay đổi — HMI đang chạy đúng giá trị này.'); return; }
+  if (keys.every(function(k){ return s0[k] === vals[k]; })) {
+    // W-SettingsNoop: nút "Đồng bộ" KHÔNG được vĩnh viễn là no-op — cần
+    // đẩy lại được ngưỡng khi thiết bị đã mất/lệch (vd ESP32 vừa reflash).
+    // HMI nhận frame settings là idempotent nên gửi lại không gây hại.
+    showToast('info','Cấu hình đã khớp','Vẫn đẩy lại xuống HMI để đồng bộ chắc chắn.');
+  }
   if (state.pendingSettings) { clearTimeout(state.pendingSettings.timer); state.pendingSettings = null; }
+  var wantVals = vals;
   state.pendingSettings = {
     vals: vals,
     // M4: KHÔNG còn timer 4s "Đã lưu" — chỉ /settings_ack xác nhận (quá 10s → báo HMI chưa xác nhận).
     timer: setTimeout(function(){
       state.pendingSettings = null;
+      // R-04: HMI chỉ push /settings_ack khi ngưỡng THẬT SỰ đổi ⇒ bấm
+      // "Đồng bộ" với đúng giá trị đang chạy sẽ không có ack. Nếu /settings
+      // hiện tại ĐÚNG bằng giá trị vừa yêu cầu ⇒ coi như đã áp dụng (HMI
+      // đang chạy đúng giá trị đó) — không báo lỗi giả.
+      var want = wantVals;
+      // R-04: so với NGUỒN SỰ THẬT (ngưỡng đang chạy = /settings_ack của HMI),
+      // KHÔNG phải /settings (node ERP tự ghi ⇒ luôn khớp ⇒ báo thành công giả).
+      // H-2: phải kiểm tra cur CÓ tồn tại trước khi đọc cur[k] — nếu không,
+      // timer chết bằng TypeError ⇒ KHÔNG có toast thành công cũng không có
+      // toast lỗi (đúng case HMI offline mà fallback này dành cho).
+      var cur = state.runningSettings;
+      if (cur && want && ['fan_on','fan_off','pump_on','pump_off'].every(function(k){
+        return Math.abs(num(cur[k], NaN) - want[k]) < 0.001;
+      })) {
+        showToast('success','Cấu hình đã áp dụng','Giá trị đang chạy khớp yêu cầu.');
+        return;
+      }
       showToast('warning','HMI chưa xác nhận cấu hình','Chưa nhận /settings_ack sau 10s — HMI có thể offline.');
     }, 10000)
   };
   showToast('info','Đang đồng bộ cấu hình','Chờ HMI xác nhận…');
-  state.db.ref('settings').set(vals).catch(function(err){
+  // L-50r: KHÔNG xoá cờ ở đây — nếu ghi lỗi thì chỉnh sửa đang dở mất bảo
+  // vệ ⇒ /settings tải về sẽ ghi đè lên những gì người dùng đang gõ.
+  // (Cờ được xoá trong .then() khi ghi thành công — xem bên dưới.)
+  state.db.ref('settings').set(vals).then(function(){
+    state.settingsDirty = false;          // L-50r: chỉ xoá cờ khi ghi THÀNH CÔNG
+  }).catch(function(err){
     if (state.pendingSettings) { clearTimeout(state.pendingSettings.timer); state.pendingSettings = null; }
     showToast('critical','Lưu thất bại', String(err));
   });
@@ -2781,9 +3017,14 @@ function sanitizeSettings(v) {
 /* ---------- Hỗ trợ lịch sử dạng mảng có key (xem histRef ở dưới) ---------- */
 function historyEntry(key, p) {
   return { key: key, time: parseTs(p.timestamp),
-           t: num(p.temperature, 0), h: num(p.humidity, 0),
+           t: num(p.temperature, 0), h: num(p.humidity, 0),   // M-16: xem ghi chu ben duoi
            fan: p.fan_state === true, pump: p.pump_state === true,
-           mode: String(p.mode || 'AUTO') };
+           mode: String(p.mode || '') };   // L-58r: giữ nguyên mode lạ
+}
+/* W-History0: bản ghi THIẾU field nhiệt độ không được biến thành điểm 0.0 °C
+   (kéo min/trung bình báo cáo xuống) ⇒ bỏ hẳn bản ghi đó. */
+function historyHasTemp(p) {
+  return num(p && p.temperature, null) !== null;
 }
 function historyIndexByKey(key) {
   for (var i = 0; i < state.history.length; i++) {
@@ -2809,6 +3050,23 @@ function scheduleHistoryRender() {
     historyRenderTimer = null;
     renderDashboard(); renderMonitoring(); renderReports();
   }, 150);
+}
+
+/* ---------- Nhịp tim ERP (V17 — chế độ FREE TIER) ----------
+   HMI chỉ chạy nhịp NHANH (ghi /system_status 2 s, đọc /control 1 s) khi có
+   ERP đang mở; không có ERP thì HMI tự chuyển nhịp tiết kiệm để không vượt
+   hạn mức 20.000 ghi + 50.000 đọc/ngày của Firebase free tier (không cần
+   bật Blaze). ERP ghi /erp_online mỗi 60 s (1.440 ghi/ngày khi tab mở). */
+function startErpHeartbeat() {
+  if (state._erpBeatTimer) return;          // đã bật rồi
+  var beat = function () {
+    try {
+      if (!state.db) return;
+      state.db.ref('erp_online').set({ ts: Date.now(), client_id: CLIENT_ID });
+    } catch (e) {}
+  };
+  beat();
+  try { state._erpBeatTimer = setInterval(beat, 60000); } catch (e) {}
 }
 
 function initFirebase() {
@@ -2837,12 +3095,16 @@ function startRealtime() {
   state.db = db;
   state.firebaseOk = false;
   setText('set-conn', 'Đang kết nối…');
+  // V17: ghi nhịp tim ngay (không chờ .info/connected) để HMI nhận biết sớm.
+  startErpHeartbeat();
   try {
 
     db.ref('.info/connected').on('value', function(snap){
       state.firebaseOk = !!snap.val();
       setText('set-conn', state.firebaseOk ? 'Online ✓' : 'Offline');
       var sc = $('set-conn'); if (sc) sc.style.color = state.firebaseOk ? 'var(--success)' : 'var(--danger)';
+      // V17: báo hiệu "có ERP đang theo dõi" ngay khi kết nối ⇒ HMI chạy nhịp nhanh.
+      if (state.firebaseOk) startErpHeartbeat();
       renderDashboard();
     });
 
@@ -2852,17 +3114,56 @@ function startRealtime() {
       var prev = state.current;
       // Trong lúc chờ ACK (status = TT cũ) hoặc status mang seq < ack mới nhất
       // (status cũ về SAU ack) — giữ mode/fan/pump/khóa từ optimistic, không nháy.
-      var pend = !!state.pendingCmd || num(v.last_command_sequence, 0) < state.lastAckSequence;
+      // M-15: chỉ mask khi THỰC SỰ có lệnh đang chờ — trước đây dùng
+  // "last_command_sequence < lastAckSequence" ⇒ sau khi restart HMI, ERP
+  // luôn hiện trạng thái optimistic (thiết bị có thể đang chạy bơm còn
+  // ERP hiện OFF).
+  var pend = !!state.pendingCmd;
+      // H-10: nạp sàn seq từ /system_status (seq HMI đã xử lý) — nếu không,
+      // lastAckSequence = 0 ⇒ ACK cũ từ phiên trước bị coi là "mới" ⇒
+      // guard "không ghi đè lệnh đang chờ" tắt sai.
+      var hmiSeq = num(v.last_command_sequence, 0);
+      if (hmiSeq > state.lastAckSequence) state.lastAckSequence = hmiSeq;
       state.current = {
-        t: num(v.temperature, isFinite(prev.t) ? prev.t : null),   // num(): fallback số cũ
-        h: num(v.humidity,   isFinite(prev.h) ? prev.h : null),
+        // L-48r: field VẮNG thiếu ⇒ giữ null (KHÔNG giữ số cũ) — nếu không,
+        // cảm biến chết vẫn hiện số cũ và badge "✓ Bình thường" ⇒ che mất lỗi.
+        t: (v.temperature == null || v.temperature === '') ? null : num(v.temperature, null),
+        h: (v.humidity == null || v.humidity === '') ? null : num(v.humidity, null),
         fan: pend ? prev.fan : !!v.fan_state, pump: pend ? prev.pump : !!v.pump_state,
-        mode: pend ? prev.mode : (v.mode || 'AUTO'), comm_ok: typeof v.comm_ok === 'boolean' ? v.comm_ok : false,
+        // L-58r: mode lạ/KHÔNG có ⇒ giữ nguyên (không map thành 'AUTO' — nút
+        // AUTO sáng lên khi chưa biết trạng thái).
+        mode: pend ? prev.mode : (v.mode || ''), comm_ok: typeof v.comm_ok === 'boolean' ? v.comm_ok : false,
         failsafe: !!v.failsafe, heartbeat: num(v.heartbeat, 0),
-        emergency_lock: pend ? prev.emergency_lock : !!v.emergency_lock,
+        // W-LockMask: khoá E-STOP là trạng thái AN TOÀN — không được che bởi
+        // cờ "đang chờ ACK". Nhưng KHÔNG được LATCH (|| prev.emergency_lock)
+        // — nếu latch, sau 1 lần E-STOP, ERP hiện "LOCKED" mãi mãi ⇒ mất
+        // quyền điều khiển. Lấy đúng trạng thái thiết bị; lúc đang GỬI thì
+        // dùng cờ "estopUnacked" để hiện trạng thái chờ.
+        emergency_lock: !!v.emergency_lock,
         last_command_sequence: num(v.last_command_sequence, 0),
         last_command_result: String(v.last_command_result || '')
       };
+      // H-Skew: ước lượng lệch đồng hồ trình duyệt ↔ HMI từ timestamp của
+      // /system_status ⇒ bù vào issued_at_ms (lệnh không còn bị HMI từ chối
+      // oan) và cảnh báo khi lệch quá 30 s.
+      var hmiTs = parseTs(v.timestamp);
+      if (hmiTs) {
+        var skew = Date.now() - hmiTs.getTime();
+        state.clockOffset = -skew;
+        state.clockSkew = Math.abs(skew);
+        if (state.clockSkew > 30000) {
+          setStatus('Lệch đồng hồ ' + Math.round(state.clockSkew / 1000) + 's');
+          if (!state._skewWarned || Date.now() - state._skewWarned > 60000) {
+            state._skewWarned = Date.now();
+            showToast('warning', 'Lệch đồng hồ',
+              'Đồng hồ máy lệch HMI ' + Math.round(state.clockSkew / 1000) +
+              's — đã tự bù cho lệnh, nhưng nên đồng bộ NTP.');
+          }
+        }
+      }
+      // Server Room Twin (port tu du an Kien truc mang): day ban trang thai MOI
+      // NHAT qua debounce 400ms - khong push lich su.
+      if (window.queueTwinUpdate) window.queueTwinUpdate(state.current);
       // H2: system_status xác nhận E-STOP đã CHỐT thật → bỏ cờ chưa xác nhận.
       if (state.estopUnacked && v.emergency_lock === true) state.estopUnacked = false;
       // M1: age tính từ thời điểm MÁY NÀY nhận được heartbeat MỚI — không so
@@ -2870,20 +3171,29 @@ function startRealtime() {
       var hb = num(v.heartbeat, 0);
       if (hb !== state.lastHeartbeat) {
         state.lastHeartbeat = hb;
-        state.lastUpdate = Date.now();
       }
-      if (!state.historySourceReady) {
-        // Điểm tạm thời CHƯA có key — sẽ bị loại bỏ ngay khi listener
-        // /history (child_added) của chính nó bắt đầu nhận dữ liệu.
-        state.history.push({key: null, time: parseTs(v.timestamp),
-                             t: state.current.t||0, h: state.current.h||0,
-                             fan:state.current.fan, pump:state.current.pump, mode:state.current.mode});
-        if (state.history.length > MAX_HISTORY) state.history.shift();
+      // W-Heartbeat: topbar phải sống theo thời điểm NHẬN được status — nếu
+      // chỉ cập nhật khi heartbeat ĐỔI (mà HMI phát heartbeat cố định) thì
+      // topbar báo "Offline" vĩnh viễn.
+      state.lastUpdate = Date.now();
+      if (!state.historySourceReady && state.current.t !== null) {
+        // R-01b: chỉ tạo điểm tạm khi SỐ LIỆU ĐỔI — trước đây đẩy 1 bản
+        // nhân bản mỗi nhịp 1 Hz ⇒ làm nhiễu biểu đồ và thống kê.
+        var sig = state.current.t + '|' + state.current.h + '|' + state.current.mode;
+        if (sig !== state._lastTempSig) {
+          state._lastTempSig = sig;
+          state.history.push({key: null, time: parseTs(v.timestamp),
+                               t: state.current.t, h: state.current.h,
+                               fan:state.current.fan, pump:state.current.pump, mode:state.current.mode});
+          if (state.history.length > MAX_HISTORY) state.history.shift();
+        }
       }
       renderDashboard(); renderMonitoring(); renderReports(); renderDevices();
     }, function(err) {
       console.error('[Firebase] Lỗi system_status:', err);
-      state.firebaseOk = false;
+      // W-22: lỗi ĐỌC không được chặn quyền GHI — trạng thái kết nối do
+      // .info/connected quyết định; lỗi đọc chỉ là cảnh báo.
+      state.readError = true;
     });
 
     /* ---------------------------------------------------------------------
@@ -2895,16 +3205,22 @@ function startRealtime() {
     var histRef = db.ref('history').orderByKey().limitToLast(MAX_HISTORY);
 
     histRef.on('child_added', function(snap) {
-      if (!state.historySourceReady) {
-        // Loại các điểm tạm (key = null) lấy từ /system_status.
+      if (!snap.key) return;            // R-01: snapshot rỗng (key=null) ⇒ bỏ, không chèn dòng 0 °C
+      var p0 = snap.val() || {};
+      if (!historyHasTemp(p0)) return;  // W-History0: thiếu nhiệt độ ⇒ bỏ (không tạo 0.0 °C)
+      if (!state.historySourceReady) {        // Loại các điểm tạm (key = null) lấy từ /system_status.
         state.history = state.history.filter(function(x){ return !!x.key; });
         state.historySourceReady = true;
       }
       insertHistory(historyEntry(snap.key, snap.val() || {}));
+      if (window.queueTwinUpdate) window.queueTwinUpdate(state.current);
       scheduleHistoryRender();
     }, function(err){ console.error('[Firebase] history add:', err); });
     histRef.on('child_changed', function(snap) {
-      insertHistory(historyEntry(snap.key, snap.val() || {}));
+      var pc = snap.val() || {};
+      if (!historyHasTemp(pc)) return;  // W-History0: thiếu nhiệt độ ⇒ bỏ
+      insertHistory(historyEntry(snap.key, pc));
+      if (window.queueTwinUpdate) window.queueTwinUpdate(state.current);
       scheduleHistoryRender();
     }, function(err){ console.error('[Firebase] history changed:', err); });
     histRef.on('child_removed', function(snap) {
@@ -2913,45 +3229,91 @@ function startRealtime() {
       if (i >= 0) { state.history.splice(i, 1); scheduleHistoryRender(); }
     }, function(err){ console.warn('[Firebase] history:', err); });
 
-    db.ref('alarms').limitToLast(200).on('value', function(snap) {
-      var v = snap.val() || {}, list = [];
-      Object.keys(v).forEach(function(k){
-        var a = v[k] || {};
-        var type = String(a.type || 'UNKNOWN');
-        var tnum = (a.temperature == null || a.temperature === '') ? null : Number(a.temperature);
-        list.push({
-          key: k,
-          type: type,                                   // chuỗi → sẽ escape khi render
-          message: String(a.message || ''),
-          temperature: isFinite(tnum) ? tnum : null,     // tránh .toFixed() ném lỗi
-          timestamp: a.timestamp,
-          severity: alarmSeverity(type)
-        });
-      });
-      list.sort(function(a,b){ return parseTs(b.timestamp)-parseTs(a.timestamp); });
-      state.alarms = list;
-
-      if (!state.alarmsBaselineReady) {
-        // Snapshot ĐẦU TIÊN khi mở trang = lịch sử cũ → chỉ đánh dấu đã xem,
-        // KHÔNG toast. Cách cũ (seenKeysCount > 1) chỉ bỏ qua đúng 1 mục nên
-        // toàn bộ báo cáo cũ bị "phát" như thể vừa xảy ra ở mọi lần mở trang.
-        state.alarmsBaselineReady = true;
-        for (var b = 0; b < list.length; b++) state.seenKeys[list[b].key] = true;
-        if (!state.hasAlarmReadBaseline) {
-          state.lastSeenAlarmTs = list.length ? (alarmTs(list[0]) || Date.now()) : Date.now();
-          state.hasAlarmReadBaseline = true;
-          try { localStorage.setItem('pumpvision_last_alarm_ts', String(state.lastSeenAlarmTs)); } catch(e) {}
-        }
-      } else {
-        for (var i = 0; i < list.length; i++) {
-          if (!state.seenKeys[list[i].key]) {
-            state.seenKeys[list[i].key] = true;
-            toastAlarm(list[i]);                        // chỉ báo cáo phát sinh MỚI
-          }
-        }
+    // M-21: /alarms — chỉ ĐỌC TOÀN BỘ (value) ĐÚNG 1 LẦN để lấy baseline, rồi
+    // NGẮT listener value; phần tăng dần đi qua child_added/changed/removed ⇒
+    // mỗi alarm chỉ tải ~400 B thay vì tải lại TOÀN BỘ ~40 KB mỗi lần có alarm
+    // (đốt quota 10 GB/tháng của Firebase free tier).
+    var alarmRef = db.ref('alarms').orderByKey().limitToLast(200);
+    var alarmSeen = state.alarmSeen || (state.alarmSeen = {});  // C5: key -> đã báo toast
+    var alarmBaselineDone = false;
+    function alarmSort(a, b) {
+      // 2952/M-21: sort ỔN ĐỊNH — 2 alarm cùng timestamp (ms) có thứ tự xác định
+      var tb = parseTs(b.timestamp), ta = parseTs(a.timestamp);
+      if (!tb && !ta) return String(b.key || '').localeCompare(String(a.key || ''));
+      if (!tb) return 1;
+      if (!ta) return -1;
+      return tb - ta;
+    }
+    function alarmItem(key, a) {
+      a = a || {};
+      var type = String(a.type || 'UNKNOWN');
+      var tnum = (a.temperature == null || a.temperature === '') ? null : Number(a.temperature);
+      return { key: key, type: type, message: String(a.message || ''),
+               temperature: isFinite(tnum) ? tnum : null, timestamp: a.timestamp,
+               severity: alarmSeverity(type) };
+    }
+    function alarmIndexByKey(key) {
+      for (var i = 0; i < state.alarms.length; i++) {
+        if (state.alarms[i].key === key) return i;
       }
+      return -1;
+    }
+    function renderAlarmsNow() {
+      state.alarms.sort(alarmSort);
       renderAlarms(); renderAlarmStats(); renderRecentAlarms();
-    }, function(err){ console.error('[Firebase] Lỗi alarms:',err); });
+    }
+    function onAlarmsSnapshot(snap) {
+      var v = snap.val() || {}, list = [];
+      Object.keys(v).forEach(function(k) { list.push(alarmItem(k, v[k])); });
+      state.alarms = list;
+      state.alarmsBaselineReady = true;
+      // Baseline: đánh dấu ĐÃ XEM hết, KHÔNG toast.
+      for (var b = 0; b < list.length; b++) { alarmSeen[list[b].key] = true; state.seenKeys[list[b].key] = true; }  // C5
+      // M-22: baseline "chưa đọc" = alarm MỚI NHẤT (timestamp lớn nhất), không
+      // phải list[0] (sau khi sort tăng dần = alarm CŨ NHẤT ⇒ badge 200 + chuông
+      // sáng vĩnh viễn).
+      var newest = 0;
+      for (var n = 0; n < list.length; n++) {
+        var ts = alarmTs(list[n]);
+        if (ts > newest) newest = ts;
+      }
+      if (!state.hasAlarmReadBaseline) {
+        state.lastSeenAlarmTs = newest || Date.now();
+        state.hasAlarmReadBaseline = true;
+        try { localStorage.setItem('pumpvision_last_alarm_ts', String(state.lastSeenAlarmTs)); } catch (e) {}
+      }
+      renderAlarmsNow();
+      if (!alarmBaselineDone) {
+        alarmBaselineDone = true;
+        // Ngắt listener 'value' — nếu không, mỗi alarm mới lại tải 40 KB.
+        try { alarmRef.off('value', onAlarmsSnapshot); } catch (e) {}
+      }
+    }
+    alarmRef.on('value', onAlarmsSnapshot, function(err){ console.error('[Firebase] Lỗi alarms:', err); });
+    alarmRef.on('child_added', function(snap) {
+      var item = alarmItem(snap.key, snap.val());
+      var idx = alarmIndexByKey(item.key);
+      if (idx >= 0) state.alarms[idx] = item; else state.alarms.push(item);
+      if (state.alarms.length > 200) state.alarms.shift();
+      if (!alarmSeen[item.key]) {
+        alarmSeen[item.key] = true;
+        state.seenKeys[item.key] = true;
+        toastAlarm(item);              // chỉ báo cáo phát sinh MỚI
+      }
+      trimSeenKeys();                 // M-23r: cắt seenKeys/alarmSeen
+      renderAlarmsNow();
+    }, function(err){ console.error('[Firebase] Lỗi alarm add:', err); });
+    alarmRef.on('child_changed', function(snap) {
+      var item = alarmItem(snap.key, snap.val());
+      var idx = alarmIndexByKey(item.key);
+      if (idx >= 0) state.alarms[idx] = item; else state.alarms.push(item);
+      renderAlarmsNow();
+    }, function(err){ console.error('[Firebase] Lỗi alarm changed:', err); });
+    alarmRef.on('child_removed', function(snap) {
+      var idx = alarmIndexByKey(snap.key);
+      if (idx >= 0) state.alarms.splice(idx, 1);
+      renderAlarmsNow();
+    }, function(err){ console.warn('[Firebase] Lỗi alarm removed:', err); });
 
     db.ref('settings').on('value', function(snap){
       var v = snap.val(); if (!v) return;
@@ -2959,10 +3321,15 @@ function startRealtime() {
       // ID trong HTML dùng GẠCH NGANG (set-fan-on) còn khóa DB dùng GẠCH DƯỚI (fan_on),
       // riêng max_timeouts nằm ở ô 'set-timeouts'. Dòng cũ nối chuỗi 'set-' + k
       // → ra set-fan_on → getElementById luôn null → form KHÔNG BAO GIỜ nạp từ Firebase.
+      // L-51: nạp form từ NGUỒN SỰ THẬT (ngưỡng ĐANG CHẠY = /settings_ack của
+      // HMI), không phải /settings (giá trị ERP yêu cầu — có thể khác).
+      var runSet = state.runningSettings || state.settings;
       [['fan_on','set-fan-on'], ['fan_off','set-fan-off'],
        ['pump_on','set-pump-on'], ['pump_off','set-pump-off'],
        ['max_timeouts','set-timeouts']].forEach(function(p){
-        if ($(p[1])) $(p[1]).value = state.settings[p[0]];
+        // 2992: KHÔNG ghi đè ô đang SỬA (người dùng gõ tay) — chỉ nạp lại
+        // khi form chưa bị "bẩn" (dirty).
+        if ($(p[1]) && !state.settingsDirty) $(p[1]).value = runSet[p[0]];
       });
       renderDevices();
 
@@ -2981,16 +3348,34 @@ function startRealtime() {
       }
     }, function(err){ console.error('[Firebase] Lỗi settings:', err); });
 
+    // C-4: theo dõi slot /control — HMI KHÔNG xoá emergency_cmd:true sau khi
+    // Clear (slot là 1 node) ⇒ nếu board reboot (mất khoá) thì ERP vẫn phải
+    // có đường gỡ khoá (nút "Giải phóng" bật được).
+    db.ref('control').on('value', function(snap){
+      var v = snap.val() || {};
+      state.controlEmergency = v.emergency_cmd === true;
+      try { renderControlPanel(); } catch (e) {}
+    }, function(err){ console.error('[Firebase] Lỗi /control:', err); });
+
     // M4: HMI xác nhận THẬT — /settings_ack chỉ được push khi cấu hình đã
     // được update_settings() chấp nhận; khớp với giá trị vừa lưu → báo thành
     // công (thay cho timer 4s "Đã lưu" trước đây).
     db.ref('settings_ack').on('value', function(snap){
       var v = snap.val(); if (!v) return;
+      // R-02/R-03: /settings_ack là NGUỒN SỰ THẬT của ngưỡng ĐANG CHẠY
+      // (HMI ghi khi update_settings() chấp nhận) — /settings chỉ là giá trị
+      // ERP yêu cầu. Lưu lại để so khớp + hiển thị "ngưỡng đang chạy".
+      state.runningSettings = {
+        fan_on: num(v.fan_on, 32), fan_off: num(v.fan_off, 30),
+        pump_on: num(v.pump_on, 50), pump_off: num(v.pump_off, 42),
+        max_timeouts: num(v.max_timeouts, 1)
+      };
       if (!state.pendingSettings) return;
       var p = state.pendingSettings.vals;
-      if (p.fan_on === v.fan_on && p.fan_off === v.fan_off &&
-          p.pump_on === v.pump_on && p.pump_off === v.pump_off &&
-          p.max_timeouts === v.max_timeouts) {
+      // M-25: so bằng num() — ack có thể gửi "32" (chuỗi) còn form dùng số.
+      if (num(p.fan_on, -1) === num(v.fan_on, -2) && num(p.fan_off, -1) === num(v.fan_off, -2) &&
+          num(p.pump_on, -1) === num(v.pump_on, -2) && num(p.pump_off, -1) === num(v.pump_off, -2) &&
+          num(p.max_timeouts, -1) === num(v.max_timeouts, -2)) {
         clearTimeout(state.pendingSettings.timer);
         state.pendingSettings = null;
         showToast('success', 'HMI đã áp dụng cấu hình',
@@ -3015,6 +3400,15 @@ function startRealtime() {
    INIT
    ===================================================================== */
 initCharts();
+// 2992: đánh dấu form cấu hình "đang sửa" → /settings tải về không được
+// ghi đè mất những gì người dùng đang gõ tay.
+['set-fan-on','set-fan-off','set-pump-on','set-pump-off','set-timeouts'].forEach(function(id){
+  var el = $(id);
+  if (el) el.addEventListener('input', function () { state.settingsDirty = true; });
+  // LOW-4: blur ⇒ bỏ cờ "đang sửa" để /settings tải về nạp lại được form
+  // (trước đây cờ không bao giờ clear ⇒ form không bao giờ reload từ Firebase).
+  if (el) el.addEventListener('blur', function () { state.settingsDirty = false; });
+});
 initFirebase();
 
 // Back/forward button của trình duyệt phải đổi view như bấm menu,
@@ -3040,8 +3434,13 @@ if (gs) gs.addEventListener('input', function() {
 });
 
 // Periodic updates
-setInterval(function() { updateConnection(); renderDashboard(); }, 3000);
-setInterval(function() { if (state.history.length) renderReports(); }, 5000);
+state._ivConn = setInterval(function() { updateConnection(); renderDashboard(); }, 3000);
+state._ivReports = setInterval(function() { if (state.history.length) renderReports(); }, 5000);
+// W-26: phải DỪNG interval khi đóng tab (không chạy nền vô hạn trên màn
+// hình SCADA chạy cả ngày).
+window.addEventListener('beforeunload', function () {
+  try { clearInterval(state._ivConn); clearInterval(state._ivReports); } catch (e) {}
+});
 
 // Navigate from hash
 var h0 = (location.hash || '').replace('#', '') || 'dashboard';
@@ -3064,5 +3463,122 @@ window.addEventListener('error', function(e) {
   console.error('[Global error]', e.message || e.error);
 });
 </script>
-</body>
-</html>
+
+<!-- ===== ENV SUB-TABS: TWIN 3D + BIEU DO MOI TRUONG (port tu du an Kien truc mang) =====
+     Bundle UMD tu chua React + three (khong npm install, khong build lai), ?v=0.1.0. -->
+<script src="assets/server-room-twin.umd.js?v=0.1.0"></script>
+<script>
+(function () {
+  var twinHandle = null;
+  var twinTimer = null;
+
+  /* Luong du lieu chung: ban ghi MOI NHAT -> twin.update (debounce 400ms - moi su
+     kien don vao 1 lan day). Bieu do monitor do renderMonitoring() tu cap nhat
+     nhu cu tu state.history. */
+  window.queueTwinUpdate = function (cur) {
+    if (twinTimer) clearTimeout(twinTimer);
+    twinTimer = setTimeout(function () {
+      twinTimer = null;
+      if (twinHandle && cur) {
+        twinHandle.update({
+          temperature: cur.t,      // state.current.t <- /system_status.temperature
+          humidity: cur.h,         // state.current.h <- /system_status.humidity
+          fanStatus: !!cur.fan,    // <- fan_state
+          pumpStatus: !!cur.pump   // <- pump_state
+        });
+      }
+    }, 400);
+  };
+
+  /* Tab 1: badge trang thai 3D. Canvas >=90% container -> OK; chua du ->
+     "dang tai..." kiem tra lai moi 500ms (kem dispatch resize), toi da 10 lan. */
+  var badgeTries = 0, badgeTimer = null;
+  function setBadge(txt, cls) {
+    var b = document.getElementById('twin-badge');
+    if (b) { b.textContent = txt; b.className = 'env-badge' + (cls ? ' ' + cls : ''); }
+  }
+  function checkBadge() {
+    var el = document.getElementById('twin');
+    var cv = el ? el.querySelector('canvas') : null;
+    if (cv && el && cv.offsetWidth >= el.offsetWidth * 0.9 && cv.offsetHeight >= el.offsetHeight * 0.9) {
+      if (badgeTimer) { clearInterval(badgeTimer); badgeTimer = null; }
+      var ver = 'webgl';
+      try {
+        var probe = document.createElement('canvas');
+        if (probe.getContext('webgl2')) ver = 'webgl2';
+        else if (probe.getContext('webgl')) ver = 'webgl1';
+      } catch (e) {}
+      setBadge('3D: OK (' + ver + ')', 'env-badge-ok');
+      return;
+    }
+    if (badgeTries >= 120) {
+      if (badgeTimer) { clearInterval(badgeTimer); badgeTimer = null; }
+      setBadge('⚠ 3D không khởi tạo được', 'env-badge-err');
+      return;
+    }
+    badgeTries++;
+    setBadge('3D: đang tải…', '');
+    if (twinHandle) window.dispatchEvent(new Event('resize'));
+  }
+  checkBadge();
+  if (badgeTries < 120) badgeTimer = setInterval(checkBadge, 500);
+
+  /* Mount sau khi panel hien thi (mount luc 0x0 -> canvas ket). */
+  function mountTwin() {
+    if (twinHandle || typeof ServerRoomTwin === 'undefined') return false;
+    var el = document.getElementById('twin');
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return false;
+    twinHandle = ServerRoomTwin.mount(el);
+    window.twin = twinHandle;   // console test: twin.update / setView / resetView
+    // Mount xong → cập nhật badge ngay (trước đây phải chờ vòng 500ms).
+    badgeTries = 0;
+    checkBadge();
+    window.queueTwinUpdate(state.current);
+    return true;
+  }
+
+  if (!mountTwin()) {
+    var twinWait = setInterval(function () { if (mountTwin()) clearInterval(twinWait); }, 500);
+  }
+
+  /* Chuyen sub-tab: dung 1 panel hien thi; chart co san (liveT/liveH) resize()
+     khi mo tab (render luc panel an = width 0 -> meo); dispatch resize khi quay
+     ve twin de canvas 3D do lai. */
+  var tabBtns = document.querySelectorAll('.env-tab');
+  function activateTab(name) {
+    for (var i = 0; i < tabBtns.length; i++) {
+      var on = tabBtns[i].getAttribute('data-env-tab') === name;
+      tabBtns[i].classList.toggle('active', on);
+      tabBtns[i].setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    var pT = document.getElementById('env-panel-twin');
+    var pM = document.getElementById('env-panel-mon');
+    if (pT) pT.hidden = (name !== 'twin');
+    if (pM) pM.hidden = (name !== 'mon');
+    if (name === 'mon') {
+      if (typeof liveT !== 'undefined' && liveT) liveT.resize();
+      if (typeof liveH !== 'undefined' && liveH) liveH.resize();
+    }
+    window.dispatchEvent(new Event('resize'));
+  }
+  for (var i = 0; i < tabBtns.length; i++) {
+    tabBtns[i].addEventListener('click', function (e) {
+      var btn = e.currentTarget;
+      activateTab(btn ? btn.getAttribute('data-env-tab') : 'twin');
+    });
+  }
+
+  var bPlant = document.getElementById('twin-plant');
+  var bReset = document.getElementById('twin-reset');
+  if (bPlant) bPlant.addEventListener('click', function () { if (twinHandle) twinHandle.setView('plant'); });
+  if (bReset) bReset.addEventListener('click', function () { if (twinHandle) twinHandle.resetView(); });
+
+  /* Xoay man / doi kho: dispatch resize de canvas 3D + chart do lai. */
+  window.addEventListener('orientationchange', function () {
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 250);
+  });
+})();
+</script>
+</body></html>
