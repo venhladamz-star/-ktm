@@ -5,7 +5,7 @@
 **ESP32 là "bộ não" của hệ thống** · Modbus RTU RS-485 · Web ERP có mô hình 3D Digital Twin · chạy được trong hạn mức Firebase free tier
 
 <p align="center">
-<a href="tests/"><img src="https://img.shields.io/badge/tests-140%2F140%20PASS-brightgreen?style=flat-square" alt="140/140 tests PASS"></a>
+<a href="tests/"><img src="https://img.shields.io/badge/tests-146%2F146%20PASS-brightgreen?style=flat-square" alt="140/140 tests PASS"></a>
 <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.x-3776AB?style=flat-square" alt="Python 3"></a>
 <a href="https://micropython.org/"><img src="https://img.shields.io/badge/ESP32-MicroPython-ff7043?style=flat-square" alt="ESP32 MicroPython"></a>
 <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-free%20tier-ffca28?style=flat-square" alt="Firebase free tier"></a>
@@ -267,7 +267,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 
 ## ✅ Kiểm chứng
 
-**140/140 test hồi quy PASS** (`python -m unittest discover -s tests`) — chạy được ngay trên máy, không cần board thật.
+**146/146 test hồi quy PASS** (`python -m unittest discover -s tests`) — chạy được ngay trên máy, không cần board thật.
 
 | Nhóm test | Phạm vi |
 |---|---|
@@ -278,6 +278,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 | `test_bridge_integration.py` | Tích hợp HMI ↔ board: vòng lặp, ACK, giới hạn số lần ghi |
 | `test_v16_bugs.py` | 7 lỗi an toàn đã sửa (E-STOP không đẩy được xuống board, `/settings_ack` không lên cloud, restore chỉ thử 1 lần…) |
 | `test_v17_quota.py` | Chế độ free tier: toán hạn mức 20.000 ghi / 50.000 đọc mỗi ngày |
+| `test_v17_docs.py` | Tài liệu nạp firmware khớp firmware — chặn hướng dẫn ghi file `.py` vào offset flash thô (làm hỏng board) |
 
 | Chức năng | Điều kiện thử | Kết quả thực tế |
 |---|---|---|
@@ -298,12 +299,24 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 
 ### 1. Flash firmware lên ESP32
 
-```bash
-# dùng esptool hoặc Thonny → địa chỉ lấy từ main.py (mặc định UART2)
-esptool.py --chip esp32 --port COM4 --baud 115200 write_flash 0 esp32/main.py
-esptool.py --chip esp32 --port COM4 --baud 115200 write_flash 0x10000 esp32/pump_core.py
-esptool.py --chip esp32 --port COM4 --baud 115200 write_flash 0x20000 esp32/modbus_rtu.py
+> ⚠️ **Cảnh báo — làm đúng theo các bước dưới, nếu không có thể hỏng board.**
+> Firmware gồm **3 file Python** (`main.py`, `pump_core.py`, `modbus_rtu.py`) và **phải được copy vào filesystem của board** (Thonny hoặc mpremote).
+> **KHÔNG** ghi thẳng file `.py` vào offset flash bằng `esptool.py write_flash 0x…` — làm vậy file không nằm trong filesystem MicroPython (`import pump_core` sẽ lỗi) và còn đè vùng phân vùng flash khiến **board không còn boot được**.
+
+```text
+1. Nạp firmware MicroPython cho ESP32 (một lần):
+   https://micropython.org/download/ESP32_GENERIC/
+   · Thonny → Tools → Install MicroPython → ESP32 (Generic)
+   · hoặc esptool.py: erase_flash rồi write_flash firmware.bin (file .bin, không phải .py)
+2. Copy 3 file vào board (Thonny: mở file → Save as → chọn ổ ESP32; hoặc dùng mpremote):
+   esp32/main.py · esp32/pump_core.py · esp32/modbus_rtu.py
+3. Cấp điện lại — main.py tự chạy ngay
 ```
+
+> 🔌 **Cổng nạp là USB-C (UART0)** — đúng cổng đang nối laptop để chạy HMI.
+> `UART2` là bus RS-485 ra hiện trường, **không dùng để nạp**.
+> Nếu app đã chạy thì REPL trên UART0 đã bị tắt (`os.dupterm(None)`) → giữ nút **BOOT** khi cấp điện để vào ROM loader.
+> Chi tiết: [`esp32/README.md`](esp32/README.md)
 
 ### 2. Chạy HMI trên laptop
 
@@ -335,7 +348,7 @@ dktm/
 │   ├── modbus_rtu.py            # Modbus RTU master thuần (CRC16, FC04/FC05)
 │   ├── pump_core.py             # Lõi logic: hysteresis · failsafe · E-STOP · chống replay
 │   └── README.md                # Hướng dẫn flash + hợp đồng serial JSON
-├── tests/                       # ✅ 140 test hồi quy (unittest, chạy được ngay trên máy)
+├── tests/                       # ✅ 146 test hồi quy (unittest, chạy được ngay trên máy)
 ├── assets/                      # 🧊 Bundle 3D Digital Twin (server-room-twin.umd.js + css)
 ├── docs/                        # 📘 Tài liệu chi tiết + ảnh minh hoạ
 │   ├── HDSD.md                  # Hướng dẫn kỹ thuật & triển khai
@@ -357,7 +370,7 @@ dktm/
 | Ứng dụng desktop | Python · CustomTkinter · pyserial · requests (1 file duy nhất `HMI.py`) |
 | Cloud | Firebase Realtime Database — REST API (HMI) + JavaScript SDK (web) |
 | Web | HTML · CSS · JavaScript thuần · Chart.js · bundle UMD React + three.js (Digital Twin) |
-| Kiểm thử | `unittest` — 140 test, không phụ thuộc thiết bị thật |
+| Kiểm thử | `unittest` — 146 test, không phụ thuộc thiết bị thật |
 
 ---
 
