@@ -5,12 +5,12 @@
 **ESP32 là "bộ não" của hệ thống** · Modbus RTU RS-485 · Web ERP có mô hình 3D Digital Twin · chạy được trong hạn mức Firebase free tier
 
 <p align="center">
-<a href="tests/"><img src="https://img.shields.io/badge/tests-146%2F146%20PASS-brightgreen?style=flat-square" alt="140/140 tests PASS"></a>
+<a href="tests/"><img src="https://img.shields.io/badge/tests-146%2F146%20PASS-brightgreen?style=flat-square" alt="146/146 tests PASS"></a>
 <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.x-3776AB?style=flat-square" alt="Python 3"></a>
 <a href="https://micropython.org/"><img src="https://img.shields.io/badge/ESP32-MicroPython-ff7043?style=flat-square" alt="ESP32 MicroPython"></a>
 <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-free%20tier-ffca28?style=flat-square" alt="Firebase free tier"></a>
 <img src="https://img.shields.io/badge/build-kh%C3%B4ng%20c%C3%A1ng%20build-lightgrey?style=flat-square" alt="Không cần build">
-<img src="https://img.shields.io/badge/license-h%E1%BB%8B%20%C4%91%E1%BB%AD%20%C4%91%E1%BB%93%20%C4%83A-informational?style=flat-square" alt="Hồ đồ án học phần">
+<img src="https://img.shields.io/badge/license-%C4%91%E1%BB%93%20%C3%A1n%20h%E1%BB%8Dc%20ph%E1%BA%A7n-informational?style=flat-square" alt="Đồ án học phần">
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@
 
 ## 🎯 Vấn đề & giải pháp
 
-Phòng máy chủ tích tụ nhiệt liên tục. Khi hệ thống làm mát hoặc bơm dập lửa gặp sự cố, một lỗi nhỏ có thể thành hoạt hoạn. Hệ thống giám sát phổ biến hoặc **chỉ đo** (không điều khiển), hoặc đặt toàn bộ logic ở máy tính trung tâm — nên **mất mạng hoặc mất laptop là mất luôn lớp bảo vệ**.
+Phòng máy chủ tích tụ nhiệt liên tục. Khi hệ thống làm mát hoặc bơm dập lửa gặp sự cố, một lỗi nhỏ có thể thành hỏa hoạn. Hệ thống giám sát phổ biến hoặc **chỉ đo** (không điều khiển), hoặc đặt toàn bộ logic ở máy tính trung tâm — nên **mất mạng hoặc mất laptop là mất luôn lớp bảo vệ**.
 
 **PumpVision đảo ngược triết lý đó:**
 
@@ -90,7 +90,7 @@ Toàn bộ logic an toàn (hysteresis, failsafe, E-STOP, chống chạy lệnh) 
 <li>SCADA/HMI desktop với <b>sơ đồ công nghệ động</b> (synoptic mimic view)</li>
 <li>Lịch sử, cảnh báo, xuất CSV/JSON, cấu hình 4 ngưỡng ngay trên web</li>
 <li>Chống XSS (<code>escapeHTML</code>/<code>num</code>) và CSV injection</li>
-<li><b>140 test hồi quy</b> chạy được ngay trên máy</li>
+<li><b>146 test hồi quy</b> chạy được ngay trên máy</li>
 </ul>
 
 </td>
@@ -173,7 +173,7 @@ flowchart LR
 | 6 | **Máy bơm MB370 5 V + còi báo** | Tải CH1 — dập lửa khẩn cấp |
 | 7 | **Adapter 220 V → 12 V** + dây nguồn có công tắc | Cấp nguồn cho ESP32, quạt và mô đun relay |
 | 8 | **USB-TTL adapter** (CH340 / CP2102) | Nạp firmware và debug qua UART0 |
-| 9 | **Đếu cắm 12 cực** + dây nối | Đấu nối, phân bố nguồn cho các mô đun |
+| 9 | **Đầu cắm 12 cực** + dây nối | Đấu nối, phân bố nguồn cho các mô đun |
 | 10 | **Mô đun KY-012 (DHT11)** + breadboard | Cảm biến đối chiếu khi kiểm tra tay |
 
 ### Địa chỉ Modbus
@@ -240,7 +240,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 </tr>
 <tr>
   <td align="center"><img src="docs/img/erp-monitoring.png" alt="Web ERP biểu đồ môi trường" width="460"><br><em><b>Web ERP</b> — biểu đồ môi trường theo thời gian</em></td>
-  <td align="center"><img src="docs/img/hmi-panel.png" alt="SCADA/HMI panel điều khiển" width="460"><br><em><b>SCADA/HMI desktop</b> — panel nhiệt độ/độ ẩm, chế độ AUTO·MANUAL, điều khiển cường bức</em></td>
+  <td align="center"><img src="docs/img/hmi-panel.png" alt="SCADA/HMI panel điều khiển" width="460"><br><em><b>SCADA/HMI desktop</b> — panel nhiệt độ/độ ẩm, chế độ AUTO·MANUAL, điều khiển cưỡng bức</em></td>
 </tr>
 </table>
 
@@ -257,7 +257,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 |---|---|
 | **Hysteresis** | Quạt bật ở ≥ 32 °C, tắt ở ≤ 30 °C · bơm bật ở ≥ 50 °C, tắt ở ≤ 42 °C — chống bật/tắt chập chờn |
 | **Failsafe** | Mất cảm biến → **ngắt bơm ngay** (giữ quạt làm mát theo đặc tả) · gỡ sau 2 lần đọc OK liên tiếp · bơm không tự bật lại trong MANUAL (cảnh báo `MANUAL_CMD_LOST`) |
-| **E-STOP** | Khóa cả hai tải · khôi phục từ cloud **được đẩy xuống board** · chỉ mở khi board xác nhận · nút E-STOP không bao giờ bị khoá |
+| **E-STOP** | Khóa cả hai tải · khôi phục từ cloud **được đẩy xuống board** · chỉ mở khi board xác nhận · nút E-STOP không bao giờ bị khóa |
 | **Chống chạy lệnh** | Seq riêng cho lệnh ERP · 1 bộ đếm duy nhất gửi ESP32 (lưu flash + seed từ telemetry) · E-STOP miễn kiểm tra tuổi nhưng vẫn chặn theo seq |
 | **Interlock** | `pump_cmd = true` bị chặn khi failsafe / thiếu tín hiệu · `clear_emergency` chỉ chạy khi tải đã OFF |
 | **Lệnh rác** | Sai kiểu bool → **REJECT** kèm lý do · frame thiếu `issued_at_ms` → không fresh (giữ guard) |
@@ -273,7 +273,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 |---|---|
 | `test_pump_core.py` | Lõi logic: hysteresis, failsafe, E-STOP, chống replay, validate ngưỡng |
 | `test_modbus_rtu.py` | Dựng khung Modbus, CRC16, frame đọc/ghi |
-| `test_hmi_batch1.py` | Cầu nối HMI: tuổi lệnh, seq, ACK, khôi phục khoá E-STOP, cách ly file trạng thái thật |
+| `test_hmi_batch1.py` | Cầu nối HMI: tuổi lệnh, seq, ACK, khôi phục khóa E-STOP, cách ly file trạng thái thật |
 | `test_main_fw.py` | Firmware `esp32/main.py` nạp với module máy giả — kiểm tra ghi coil và ghi flash |
 | `test_bridge_integration.py` | Tích hợp HMI ↔ board: vòng lặp, ACK, giới hạn số lần ghi |
 | `test_v16_bugs.py` | 7 lỗi an toàn đã sửa (E-STOP không đẩy được xuống board, `/settings_ack` không lên cloud, restore chỉ thử 1 lần…) |
@@ -287,7 +287,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 | Bật bơm khi ≥ 50 °C | Đặt 50/42 °C | ✅ Bơm MB370 + còi báo chạy, cảnh báo `FIRE` sinh ra |
 | Failsafe khi mất cảm biến | Rút dây cảm biến | ✅ Ngắt bơm trong 1 chu kỳ, quạt vẫn chạy, gỡ sau 2 lần đọc OK |
 | E-STOP khóa cả 2 tải | Bấm trên HMI và trên ERP | ✅ Tải dừng ngay, ERP hiện LOCKED, lệnh gỡ bị chặn tới khi board xác nhận |
-| Lệnh E-STOP cũ vẫn hiệu lực | HMI khởi động lại khi còn lệnh trên cloud | ✅ Board vẫn khoá, ERP nhận ACK đúng |
+| Lệnh E-STOP cũ vẫn hiệu lực | HMI khởi động lại khi còn lệnh trên cloud | ✅ Board vẫn khóa, ERP nhận ACK đúng |
 | Mô hình 3D Digital Twin | ERP đang mở, có telemetry | ✅ Badge `3D: OK (webgl2)`, trạng thái đổi theo telemetry |
 | Chạy trong hạn mức free tier | ERP mở / ERP đóng | ✅ ~3.500 ghi + ~19.000 đọc mỗi ngày khi chạy 24/7 |
 
@@ -376,7 +376,7 @@ dktm/
 
 ## 🔒 Bảo mật & giới hạn
 
-Vui lòng đọc trước khi public hoá repo:
+Vui lòng đọc trước khi công khai repo:
 
 - ⚠️ **Mật khẩu demo `0001` nằm trong `HMI.py`** và API key Firebase (Web API key vốn không phải secret, nhưng **mật khẩu demo thì có**). Đổi mật khẩu hoặc để repo private.
 - ⚠️ **Firebase Rules đang mở** (`".read": true, ".write": true`) vì web không đăng nhập. Ai có URL cũng gửi được lệnh tới `/control` (bật bơm, E-STOP). Muốn siết lại: bật `"auth != null"` + Anonymous Auth, hoặc thêm kiểm tra ở backend.
@@ -396,7 +396,7 @@ Vui lòng đọc trước khi public hoá repo:
 
 ## 📄 Giấy phép & lưu ý
 
-Đồ án học phần môn **Điều khiển thông minh** — dùng cho mục đích học tập và trình bày. Trước khi public hoá hoặc triển khai thực tế, hãy thay đổi mật khẩu demo, siết lại Firebase Rules và kiểm tra lại toàn bộ đường điện.
+Đồ án học phần môn **Điều khiển thông minh** — dùng cho mục đích học tập và trình bày. Trước khi công khai hoặc triển khai thực tế, hãy thay đổi mật khẩu demo, siết lại Firebase Rules và kiểm tra lại toàn bộ đường điện.
 
 ---
 
