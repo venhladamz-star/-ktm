@@ -162,6 +162,10 @@ class PumpController(object):
         self.comm_ok = False
         self.consecutive_timeouts += 1
         if self.consecutive_timeouts >= MAX_TIMEOUTS and not self.failsafe:
+            # B18: bơm vừa bị CẮT ⇒ lần bật lại sau này là chu kỳ phun MỚI,
+            # phải có alarm FIRE mới (trước đây cờ không reset ⇒ cháy lại mà
+            # không có cảnh báo nào).
+            self._fire_alarm_sent = False
             manual_pump = (self.mode == MODE_MANUAL and self.pump_state)
             self.failsafe = True
             self._good_reads = 0
@@ -179,6 +183,10 @@ class PumpController(object):
 
     # ---------- lệnh từ xa (qua HMI bridge) ----------
     def _seq_plausible(self, seq):
+        # B17: bool là int ⇒ seq:true từng được coi là seq=1 (ghim last_seq,
+        # chặn vĩnh viễn seq 0/1 kể cả E-STOP thật).
+        if isinstance(seq, bool):
+            return False
         return isinstance(seq, int) and 0 <= seq <= MAX_SEQ
 
     def _ack(self, accepted, message):
@@ -217,6 +225,13 @@ class PumpController(object):
             return self._ack(False, "fan_cmd phai la boolean (true/false)")
         if "pump_cmd" in cmd and _as_flag(cmd.get("pump_cmd")) is None:
             return self._ack(False, "pump_cmd phai la boolean (true/false)")
+        # B8: E-STOP/Clear CŨNG phải là bool thật — trước đây
+        # {"emergency_cmd": "true", "pump_cmd": true} bị coi là lệnh BẬT BƠM
+        # bình thường và trả ACCEPTED ⇒ người gửi tưởng đã khoá khẩn cấp.
+        if "emergency_cmd" in cmd and _as_flag(cmd.get("emergency_cmd")) is None:
+            return self._ack(False, "emergency_cmd phai la boolean (true/false)")
+        if "clear_emergency" in cmd and _as_flag(cmd.get("clear_emergency")) is None:
+            return self._ack(False, "clear_emergency phai la boolean (true/false)")
         if emergency:
             was_locked = self.emergency_lock
             self.emergency_lock = True
@@ -296,10 +311,22 @@ class PumpController(object):
     def _push(self, etype, message, temp):
         self._alarms.append({"type": etype, "message": message, "temperature": temp})
 
+    def push_alarm(self, etype, message):
+        """Alarm tu tang FIRMWARE (main.py): loi flash / lien ket USB / bug code.
+
+        Dung chung hang doi pop_alarms() ⇒ gui ve HMI qua flush_events().
+        """
+        self._push(etype, message, self.last_temp)
+
     def pop_alarms(self):
         out = self._alarms
         self._alarms = []
         return out
+
+    def requeue_alarms(self, items, cap=20):
+        """B3: gửi alarm thất bại ⇒ đưa trở lại hàng đợi (giới hạn cap
+        để không phình bộ nhớ khi link chết dài ngày)."""
+        self._alarms = list(items)[:cap] + self._alarms
 
     # ---------- relay ghi lỗi (main.py báo cáo khi write Modbus thất bại) ----------
     def note_write_fail(self, channel):

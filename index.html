@@ -916,7 +916,7 @@ tbody tr:last-child td{border-bottom:none}
 .toast-body{flex:1;min-width:0}
 .toast-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
 .toast-msg{font-size:12px;color:var(--text-soft);line-height:1.5}
-/* ==================== PASSWORD MODAL ==================== */#pw-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9500;padding:16px}#pw-overlay.show{display:flex}#pw-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:100%;max-width:340px;padding:24px 22px;animation:slideUp .25s .05s backwards}.pw-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}.pw-sub{font-size:12px;color:var(--text-mute);line-height:1.55;margin-bottom:14px}#pw-input{width:100%;height:46px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-soft);padding:0 12px;font-size:22px;letter-spacing:8px;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text);outline:none}#pw-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}#pw-err{min-height:17px;font-size:12px;font-weight:600;color:var(--danger);margin-top:8px}.pw-actions{display:flex;gap:10px;margin-top:10px}.pw-actions .btn{flex:1;justify-content:center}
+/* ==================== PASSWORD MODAL ==================== */#pw-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9500;padding:16px}/* B24: E-STOP LUÔN bấm được — không để modal mật khẩu che nút khẩn cấp (E-STOP miễn MK). */#ctrl-estop{position:relative;z-index:9601}#pw-overlay.show{display:flex}#pw-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:100%;max-width:340px;padding:24px 22px;animation:slideUp .25s .05s backwards}.pw-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}.pw-sub{font-size:12px;color:var(--text-mute);line-height:1.55;margin-bottom:14px}#pw-input{width:100%;height:46px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-soft);padding:0 12px;font-size:22px;letter-spacing:8px;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text);outline:none}#pw-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}#pw-err{min-height:17px;font-size:12px;font-weight:600;color:var(--danger);margin-top:8px}.pw-actions{display:flex;gap:10px;margin-top:10px}.pw-actions .btn{flex:1;justify-content:center}
 /* ==================== SIDEBAR OVERLAY ==================== */
 .sidebar-overlay{display:none}
 @media(max-width:768px){
@@ -1126,7 +1126,7 @@ tbody tr:last-child td{border-bottom:none}
               <span class="kpi-badge down" id="kpi-t-badge">⚠ Quá nhiệt</span>
             </div>
             <div class="kpi-label">Nhiệt độ</div>
-            <div class="kpi-value red" id="kpi-t-val">52.0<span class="kpi-unit">°C</span></div>
+            <div class="kpi-value gray" id="kpi-t-val">--<span class="kpi-unit">°C</span></div>
             <div class="kpi-bar"><div class="kpi-bar-fill red" id="kpi-t-bar" style="width: 86.5833%;"></div></div>
           </div>
 
@@ -1213,8 +1213,12 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="status-list">
               <div class="status-item">
-                <span class="status-led err" id="st-rs485"></span>
-                <div class="status-meta"><div class="lbl">RS-485</div><div class="val" id="st-rs485-val">Timeout</div></div>
+                <span class="status-led err" id="st-esp32"></span>
+                <div class="status-meta"><div class="lbl">ESP32</div><div class="val" id="st-esp32-val">Mất liên kết</div></div>
+              </div>
+              <div class="status-item">
+                <span class="status-led off" id="st-rs485"></span>
+                <div class="status-meta"><div class="lbl">RS-485</div><div class="val" id="st-rs485-val">—</div></div>
               </div>
               <div class="status-item">
                 <span class="status-led on" id="st-cloud"></span>
@@ -1242,7 +1246,7 @@ tbody tr:last-child td{border-bottom:none}
               <div class="card-title">Điều khiển từ xa</div>
               <div class="card-subtitle">ERP → Firebase → HMI → Modbus Relay</div>
             </div>
-            <span class="kpi-badge gray" id="cmd-status">Lệch đồng hồ 242636s</span>
+            <span class="kpi-badge gray" id="cmd-status">Sẵn sàng</span>
           </div>
           <div class="control-grid">
             <div class="control-panel">
@@ -1349,7 +1353,7 @@ tbody tr:last-child td{border-bottom:none}
           <div class="card-header">
             <div class="card-title">Load Distribution by Actuator</div>
           </div>
-          <div class="asset-list" id="asset-list"><div class="asset-item"><div class="asset-head"><span class="asset-name">Nhiệt độ (SHT20)</span><span class="asset-value danger">52.0 °C</span></div><div class="asset-bar"><div class="asset-bar-fill danger" style="width:86.58333333333333%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Độ ẩm (SHT20)</span><span class="asset-value ">46.6 %</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:46.65%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Quạt 12V (CH2)</span><span class="asset-value ">Dừng</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:5%"></div></div></div><div class="asset-item"><div class="asset-head"><span class="asset-name">Bơm MB370 (CH1)</span><span class="asset-value ">Dừng</span></div><div class="asset-bar"><div class="asset-bar-fill " style="width:5%"></div></div></div></div>
+          <div class="asset-list" id="asset-list"><div class="empty-state" style="padding:20px 0"><p style="font-size:12px">Chưa có dữ liệu cảm biến.</p></div></div>
         </div>
       </section>
 
@@ -1457,6 +1461,12 @@ tbody tr:last-child td{border-bottom:none}
               <option value="FAN_ACTUATOR_FAIL">🌀 Lỗi cơ cấu quạt</option>
               <option value="PUMP_ACTUATOR_FAIL">💧 Lỗi cơ cấu bơm</option>
               <option value="SLAVE_ERROR">🔌 Lỗi thiết bị Modbus</option>
+              <option value="MANUAL_CMD_LOST">✋ Mất lệnh tay do rớt cảm biến</option>
+              <option value="CLEAR_ESTOP_FAIL">🔒 Không gỡ được E-STOP</option>
+              <option value="LINK_WRITE_FAIL">🔌 Mất liên kết USB về HMI</option>
+              <option value="FLASH_WRITE_FAIL">💾 Không ghi được flash</option>
+              <option value="FW_ERROR">🐞 Lỗi firmware</option>
+              <option value="BUS_DIAG">🧪 Chẩn đoán RS-485</option>
             </select>
             <select class="select" id="al-filter-sev">
               <option value="">Tất cả mức độ</option>
@@ -1503,7 +1513,7 @@ tbody tr:last-child td{border-bottom:none}
               </div>
             </div>
             <div class="device-rows">
-              <div class="device-row"><span class="k">Nhiệt độ</span><span class="v" id="dev-sht-t">52.0 °C</span></div>
+              <div class="device-row"><span class="k">Nhiệt độ</span><span class="v" id="dev-sht-t">--</span></div>
               <div class="device-row"><span class="k">Độ ẩm</span><span class="v" id="dev-sht-h">46.6 %</span></div>
               <div class="device-row"><span class="k">Register</span><span class="v">0x0001 - 0x0002</span></div>
               <div class="device-row"><span class="k">Baudrate</span><span class="v">9600 8N1</span></div>
@@ -1806,7 +1816,7 @@ var CLIENT_ID = (function () {
 })();
 var state = {
   device: null,
-  current: { t: null, h: null, fan: false, pump: false, mode: '--', comm_ok: false, failsafe: false, emergency_lock: false, heartbeat: 0 },
+  current: { t: null, h: null, fan: false, pump: false, mode: '--', comm_ok: false, failsafe: false, emergency_lock: false, heartbeat: 0, simulation: false },
   // H-Skew: lệch đồng hồ (ms) và cờ cảnh báo lệch
   clockOffset: 0, clockSkew: 0, _skewWarned: 0,
   // 2992: form cấu hình đang được người dùng sửa → không được ghi đè
@@ -1837,6 +1847,8 @@ var state = {
   lastSeenAlarmTs: 0,
   hasAlarmReadBaseline: false,
   pendingCmd: null,             // {seq, timer, prev, estop, unsub} — theo dõi ACK cho lệnh đang bay
+  lastAckShownSeq: 0,           // B13: seq cuối đã hiển thị ACK + phán quyết
+  lastAckShownAccepted: null,
   estopUnacked: false,          // H2: E-STOP đã gửi nhưng CHƯA nhận ACK → chặn Clear
   pendingSettings: null,        // {vals, timer} — vừa lưu /settings, chờ xác nhận
   activeToastKeys: {}
@@ -2043,9 +2055,26 @@ function renderDashboard() {
   // M-30r: ngưỡng "stale" phải khớp HMI (HMI chấp nhận lệnh tới 300 s
   // theo CLOCK_SKEW_TOL_MS) — cảnh báo sớm hơn sẽ khiến người dùng tưởng
   // mất liên kết trong khi HMI vẫn nhận lệnh.
-  var rs485Ok = state.current.comm_ok !== false && age < 45;
-  setClass('st-rs485', 'status-led ' + (rs485Ok ? 'on' : 'err'));
-  setText('st-rs485-val', rs485Ok ? 'OK' : 'Timeout');
+  // Tách 2 chỉ báo (trước đây 1 LED "RS-485" gánh cả hai nghĩa):
+  //  · ESP32  = dữ liệu còn chảy về ERP không (HMI → Firebase) ⇒ board còn sống.
+  //  · RS-485 = bus cảm biến phía ESP32 (comm_ok trong telemetry).
+  // Mất HMI KHÔNG có nghĩa bus hỏng, và ngược lại ⇒ phải hiện riêng.
+  var linkOk = age < 45;
+  var sim = !!state.current.simulation;
+  if (sim) {
+    // Không có board thật ⇒ hai LED này KHÔNG được báo xanh như thiết bị thật.
+    setClass('st-esp32', 'status-led warn');
+    setText('st-esp32-val', 'Mô phỏng — không có board');
+    setClass('st-rs485', 'status-led off');
+    setText('st-rs485-val', '—');
+  } else {
+    setClass('st-esp32', 'status-led ' + (linkOk ? 'on' : 'err'));
+    setText('st-esp32-val', linkOk ? 'OK' : 'Mất liên kết');
+    var rs485Ok = state.current.comm_ok !== false;
+    // Không có dữ liệu tươi ⇒ KHÔNG biết bus thế nào (đừng đoán "OK"/"lỗi").
+    setClass('st-rs485', 'status-led ' + (!linkOk ? 'off' : rs485Ok ? 'on' : 'err'));
+    setText('st-rs485-val', !linkOk ? '—' : rs485Ok ? 'OK' : 'Lỗi bus');
+  }
 
   setClass('st-cloud', 'status-led ' + (state.firebaseOk ? 'on' : 'warn'));
   setText('st-cloud-val', state.firebaseOk ? 'Trực tuyến' : 'Đang chờ');
@@ -2073,12 +2102,15 @@ function renderDashboard() {
 
   var t = hasT ? c.t : null, h = hasH ? c.h : null, fan = c.fan, pump = c.pump;
   var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
+  // E11: num() an toàn khi settings bị hỏng kiểu (chuỗi/null) — không bị toFixed crash.
+  var fanOn = num(th.fan_on, 32), fanOff = num(th.fan_off, 30), pumpOn = num(th.pump_on, 50), pumpOff = num(th.pump_off, 42);
+
 
   setHTML('kpi-t-val', (t === null ? '--' : t.toFixed(1)) + '<span class="kpi-unit">°C</span>');
   // L-48: KHÔNG kết luận "bình thường"/"quá nhiệt" khi CHƯA CÓ dữ liệu —
   // null >= ngưỡng là false ⇒ rơi vào "✓ Bình thường" ⇒ báo cảm biến bình
   // thường khi thực ra chưa có số liệu.
-  var tClass = (t === null) ? 'gray' : t >= th.pump_on ? 'red' : t >= th.fan_on ? 'orange' : 'green';
+  var tClass = (t === null) ? 'gray' : t >= pumpOn ? 'red' : t >= fanOn ? 'orange' : 'green';
   setClass('kpi-t-val', 'kpi-value ' + tClass);
   setClass('kpi-t-bar', 'kpi-bar-fill ' + tClass);
   // L-01: không có số liệu ⇒ thanh progress 0% là nhiễu thị giác ⇒ mờ đi
@@ -2090,8 +2122,8 @@ function renderDashboard() {
   var tBadge = $('kpi-t-badge');
   if (tBadge) {
     if (t === null) { tBadge.className = 'kpi-badge gray'; tBadge.textContent = '— Chưa có dữ liệu'; }
-    else if (t >= th.pump_on) { tBadge.className = 'kpi-badge down'; tBadge.textContent = '⚠ Quá nhiệt'; }
-    else if (t >= th.fan_on) { tBadge.className = 'kpi-badge neutral'; tBadge.textContent = '▲ Cao'; }
+    else if (t >= pumpOn) { tBadge.className = 'kpi-badge down'; tBadge.textContent = '⚠ Quá nhiệt'; }
+    else if (t >= fanOn) { tBadge.className = 'kpi-badge neutral'; tBadge.textContent = '▲ Cao'; }
     else { tBadge.className = 'kpi-badge up'; tBadge.textContent = '✓ Bình thường'; }
   }
 
@@ -2123,11 +2155,14 @@ function renderAssets() {
   var c = state.current;
   // W-07: chỉ bỏ qua khi THIẾU CẢ hai số — thiếu 1 field không được làm
   // đóng băng toàn bộ phần còn lại (các ô thiếu hiện "--").
-  if (c.t === null && c.h === null) return;
+  // E12: c.t/c.h có thể undefined (không có field) — coi như null.
+  var t = c.t == null ? null : c.t, h = c.h == null ? null : c.h;
+  if (t === null && h === null) return;
   var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
+  var fanOn = num(th.fan_on, 32), fanOff = num(th.fan_off, 30), pumpOn = num(th.pump_on, 50), pumpOff = num(th.pump_off, 42);
   var items = [
-    { name: 'Nhiệt độ (SHT20)', val: (c.t === null ? '--' : c.t.toFixed(1)) + ' °C', pct: (c.t === null ? 0 : Math.min(100, (c.t/60)*100)),
-      cls: c.t >= th.pump_on ? 'danger' : c.t >= th.fan_on ? 'warning' : 'green' },
+    { name: 'Nhiệt độ (SHT20)', val: (t === null ? '--' : t.toFixed(1)) + ' °C', pct: (t === null ? 0 : Math.min(100, (t/60)*100)),
+      cls: t === null ? '' : t >= pumpOn ? 'danger' : t >= fanOn ? 'warning' : 'green' }, 
     { name: 'Độ ẩm (SHT20)', val: (c.h === null ? '--' : c.h.toFixed(1)) + ' %', pct: (c.h === null ? 0 : Math.min(100, c.h)), cls: '' },
     { name: 'Quạt 12V (CH2)', val: c.fan ? 'Đang chạy' : 'Dừng', pct: c.fan ? 100 : 5, cls: c.fan?'green':'' },
     { name: 'Bơm MB370 (CH1)', val: c.pump ? 'Đang phun' : 'Dừng', pct: c.pump ? 100 : 5, cls: c.pump?'danger':'' }
@@ -2155,9 +2190,11 @@ function renderRecentAlarms() {
   var html = '';
   for (var i = 0; i < recent.length; i++) {
     var al = recent[i];
-    var sev = al.severity.toLowerCase() === 'critical' ? 'critical' : al.severity.toLowerCase() === 'high' ? 'warning' : 'info';
-    var icon = al.type === 'FIRE' ? '🔥' : al.type === 'COMM_LOSS' ? '📡' : al.type.indexOf('ACTUATOR') >= 0 ? '⚙️' : 'ℹ️';
-    var title = al.type === 'FIRE' ? 'Cảnh báo cháy' : al.type === 'COMM_LOSS' ? 'Mất kết nối RS-485' : al.type.indexOf('ACTUATOR') >= 0 ? 'Lỗi cơ cấu chấp hành' : 'Cảnh báo';
+    var sevRaw = safe(al.severity, 'INFO').toLowerCase();
+    var sev = sevRaw === 'critical' ? 'critical' : sevRaw === 'high' ? 'warning' : 'info';
+    var alType = safe(al.type, 'UNKNOWN');
+    var icon = alType === 'FIRE' ? '🔥' : alType === 'COMM_LOSS' ? '📡' : alType.indexOf('ACTUATOR') >= 0 ? '⚙️' : 'ℹ️';
+    var title = alType === 'FIRE' ? 'Cảnh báo cháy' : alType === 'COMM_LOSS' ? 'Mất kết nối RS-485' : alType.indexOf('ACTUATOR') >= 0 ? 'Lỗi cơ cấu chấp hành' : 'Cảnh báo';
     html += '<div class="event-card ' + sev + '">';
     html += '<div class="event-icon ' + sev + '">' + icon + '</div>';
     html += '<div class="event-body"><div class="event-title">' + escapeHTML(title) + '</div><div class="event-desc">' + escapeHTML(al.message) + '</div></div>';
@@ -2208,10 +2245,12 @@ function renderDevices() {
   setText('dev-fan-off',  'T ≤ ' + num(s.fan_off, 30).toFixed(1) + '°C');
   setText('dev-pump-on',  'T ≥ ' + num(s.pump_on,  50).toFixed(1) + '°C');
   setText('dev-pump-off', 'T ≤ ' + num(s.pump_off, 42).toFixed(1) + '°C');
-  if (typeof c.t !== 'number' || !isFinite(c.t)) return;
-  if (typeof c.h !== 'number' || !isFinite(c.h)) return;
-  setText('dev-sht-t', (c.t === null ? '--' : c.t.toFixed(1)) + ' °C');
-  setText('dev-sht-h', (c.h === null ? '--' : c.h.toFixed(1)) + ' %');
+  // B14: KHÔNG return sớm — trước đây thiếu số cảm biến là đóng băng LUÔN
+  // dòng relay/quạt/bơm ⇒ panel "Thiết bị" hiển thị sai trạng thái tải thật.
+  var hasT = (typeof c.t === 'number' && isFinite(c.t));
+  var hasH = (typeof c.h === 'number' && isFinite(c.h));
+  setText('dev-sht-t', hasT ? c.t.toFixed(1) + ' °C' : '--');
+  setText('dev-sht-h', hasH ? c.h.toFixed(1) + ' %' : '--');
   // CH1 = bơm + còi, CH2 = quạt (khớp Config.COIL_CH1 / COIL_CH2 phía HMI).
   setText('dev-rly-ch1', c.pump ? 'ON' : 'OFF');
   // W-25: CH1 = BƠM + CÒI dùng chung 1 relay ⇒ trạng thái hiển thị theo bơm;
@@ -2253,7 +2292,7 @@ function renderAlarms() {
   var html = '';
   for (var i = 0; i < list.length; i++) {
     var al = list[i];
-    var sevClass = al.severity.toLowerCase();
+    var sevClass = safe(al.severity, 'INFO').toLowerCase();
     var icon = al.type === 'FIRE' ? '🔥 ' : al.type === 'COMM_LOSS' ? '📡 ' : 'ℹ️ ';
     html += '<tr>';
     html += '<td class="mono" style="color:var(--text-mute);font-size:12px">' + fmtFull(parseTs(al.timestamp)) + '</td>';
@@ -2278,6 +2317,15 @@ function alarmSeverity(type) {
     case 'PUMP_ACTUATOR_FAIL': return 'HIGH';
     case 'SLAVE_ERROR': return 'HIGH';      // slave trả exception frame — bus khỏe, không cắt bơm
     case 'ESTOP_RELAY_FAIL': return 'CRITICAL';   // relay E-STOP không ngắt được = mất chức năng an toàn
+    // Firmware E-20..E-23 (esp32/main.py): mất liên kết USB, không ghi được
+    // flash (mất khoá E-STOP sau reboot), và Clear E-STOP thất bại (khoá đã
+    // được bật lại vì tải chưa tắt) — đều là sự cố cần người vận hành biết.
+    case 'CLEAR_ESTOP_FAIL': return 'CRITICAL';
+    case 'LINK_WRITE_FAIL': return 'HIGH';
+    case 'FLASH_WRITE_FAIL': return 'HIGH';
+    case 'FW_ERROR': return 'HIGH';
+    case 'BUS_DIAG': return 'HIGH';   // chẩn đoán RS-485 từ firmware (E-33)
+    case 'MANUAL_CMD_LOST': return 'HIGH';   // mất cảm biến cắt bơm đang chạy tay (E-05)
     default: return 'INFO';
   }
 }
@@ -2679,9 +2727,18 @@ function handleAck(v) {
   state.ackBaselineReady = true;
   if (seq < 1e15 && seq > state.lastAckSequence) state.lastAckSequence = seq;
 
-  // Không phải ACK cho lệnh mình đang chờ (HMI tự thao tác / SEQ cũ / đã timeout).
-  if (!isMine) return;
+  // B13: HMI publish ACK theo TỪNG seq và có thể SỬA LẠI (REJECTED trước rồi
+  // ACCEPTED sau — cơ chế H-3). ACK đầu đã clearCommandWatch ⇒ pendingCmd=null
+  // ⇒ nếu bỏ qua mọi ACK "không đang chờ" thì bản sửa ACCEPTED bị nuốt: ERP
+  // giữ "từ chối" dù bơm đã bật (và E-STOP bị xoá cờ chưa-xác-nhận theo phán
+  // quyết SAI). Chỉ nhận bản sửa cho ĐÚNG seq cuối + đúng tab này.
+  var lateFix = !isMine && v.client_id === CLIENT_ID &&
+                seq === state.lastAckShownSeq && v.accepted === true &&
+                state.lastAckShownAccepted === false;
+  if (!isMine && !lateFix) return;
 
+  state.lastAckShownSeq = seq;
+  state.lastAckShownAccepted = !!v.accepted;
   clearCommandWatch();
   state.estopUnacked = false;   // ACK của HMI = E-STOP đã có lời giải thích
   applyAckState(v);   // áp trạng thái MỚI NHẤT — không phải chờ /system_status 1s
@@ -3133,6 +3190,9 @@ function startRealtime() {
         // L-58r: mode lạ/KHÔNG có ⇒ giữ nguyên (không map thành 'AUTO' — nút
         // AUTO sáng lên khi chưa biết trạng thái).
         mode: pend ? prev.mode : (v.mode || ''), comm_ok: typeof v.comm_ok === 'boolean' ? v.comm_ok : false,
+        // HMI đang chạy MÔ PHỎNG (không có board thật) — ERP phải nói rõ,
+        // nếu không người vận hành tưởng thiết bị thật đang chạy.
+        simulation: v.simulation === true,
         failsafe: !!v.failsafe, heartbeat: num(v.heartbeat, 0),
         // W-LockMask: khoá E-STOP là trạng thái AN TOÀN — không được che bởi
         // cờ "đang chờ ACK". Nhưng KHÔNG được LATCH (|| prev.emergency_lock)
@@ -3294,7 +3354,12 @@ function startRealtime() {
       var item = alarmItem(snap.key, snap.val());
       var idx = alarmIndexByKey(item.key);
       if (idx >= 0) state.alarms[idx] = item; else state.alarms.push(item);
-      if (state.alarms.length > 200) state.alarms.shift();
+      // B16: mảng đang xếp MỚI NHẤT TRƯỚC (renderAlarmsNow sort tại chỗ) mà
+      // child_added push vào CUỐI ⇒ shift() xoá mất alarm MỚI NHẤT. Cắt đầu CŨ.
+      if (state.alarms.length > 200) {
+        state.alarms.sort(alarmSort);
+        while (state.alarms.length > 200) state.alarms.pop();
+      }
       if (!alarmSeen[item.key]) {
         alarmSeen[item.key] = true;
         state.seenKeys[item.key] = true;
@@ -3509,19 +3574,19 @@ window.addEventListener('error', function(e) {
         else if (probe.getContext('webgl')) ver = 'webgl1';
       } catch (e) {}
       setBadge('3D: OK (' + ver + ')', 'env-badge-ok');
-      return;
+      return true;
     }
     if (badgeTries >= 120) {
       if (badgeTimer) { clearInterval(badgeTimer); badgeTimer = null; }
       setBadge('⚠ 3D không khởi tạo được', 'env-badge-err');
-      return;
+      return false;
     }
     badgeTries++;
     setBadge('3D: đang tải…', '');
     if (twinHandle) window.dispatchEvent(new Event('resize'));
+    return false;
   }
-  checkBadge();
-  if (badgeTries < 120) badgeTimer = setInterval(checkBadge, 500);
+  if (!checkBadge() && !badgeTimer) badgeTimer = setInterval(checkBadge, 500);
 
   /* Mount sau khi panel hien thi (mount luc 0x0 -> canvas ket). */
   function mountTwin() {
@@ -3533,8 +3598,10 @@ window.addEventListener('error', function(e) {
     twinHandle = ServerRoomTwin.mount(el);
     window.twin = twinHandle;   // console test: twin.update / setView / resetView
     // Mount xong → cập nhật badge ngay (trước đây phải chờ vòng 500ms).
+    // B25: nếu chưa OK thì PHẢI tạo lại interval — trước đây mountTwin gọi
+    // checkBadge() đúng 1 lần mà không dựng lại vòng lặp ⇒ badge kẹt "đang tải…".
     badgeTries = 0;
-    checkBadge();
+    if (!checkBadge() && !badgeTimer) badgeTimer = setInterval(checkBadge, 500);
     window.queueTwinUpdate(state.current);
     return true;
   }

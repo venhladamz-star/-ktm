@@ -1,15 +1,23 @@
 # main.py — PumpVision ESP32 · firmware chinh (MicroPython)
 # Vai tro: Modbus MASTER doc SHT20 + ghi relay, chay TOAN BO logic dieu khien
-# (pump_core), noi voi laptop qua USB-C (UART0 — JSON lines 115200).
+# (pump_core), noi voi laptop qua USB-C (UART1 GPIO1/GPIO3 — JSON lines 115200).
 # KHONG dung WiFi.
 #
-# Cach flash (Thonny hoac mpremote):
+# Cach flash (mpremote):
 #   1. Flash firmware MicroPython (ESP32) len board
 #   2. Copy 3 file: modbus_rtu.py, pump_core.py, main.py
 #   3. Reset — main.py tu chay khi cap dien
 #
-# LUU Y: os.dupterm(None) gian REPL khoi UART0 → khong nhin duoc REPL qua
-# USB trong khi app chay. Muon vao REPL: hold BOOT reset, xoa/tam dung main.py.
+# LUU Y (R21): link dung UART1 tren CHINH GPIO1/GPIO3 (chan USB-C/CH340) vi
+# UART(0) bi ban build MicroPython 1.29.0 tu choi (-259). Hau qua: khi firmware
+# dang chay, REPL tren UART0 khong ra duoc chan 1/3 nua → mpremote/Thonny MAT
+# REPL. Vao duoc bang CUA SO BOOT:
+#   - Spam Ctrl-C moi 20ms TU TRUOC khi reset (DTR/RTS) → neu chay truoc luc
+#     os.dupterm(None) thi KeyboardInterrupt huy main.py → REPL thay duoc
+#     (mpremote run/cp luc nay dung duoc) → xong thi Ctrl-D (soft reset) la
+#     firmware chay lai.
+#   - Duong cuoi: hold BOOT + reset vao ROM download mode, esptool flash lai
+#     MicroPython (xoa main.py) → REPL tu do.
 
 import os
 import time
@@ -21,9 +29,14 @@ import modbus_rtu as mb
 import pump_core as pc
 
 # ---------- CAU HINH ----------
-LINK_BAUD = 115200          # UART0 — USB-C sang laptop (HMI)
+LINK_BAUD = 115200          # UART1 (GPIO1/GPIO3) — USB-C sang laptop (HMI)
 RS485_BAUD = 9600           # bus hien truong 8N1
-RS485_TX, RS485_RX = 17, 16  # UART2
+# R22: do TRUC TIEP tren ban (mpremote, cong COM7) sau khi user noi lai day
+# TTL-RS485 — huong (17, 16) (mac dinh UART2 cua MicroPython) im lang 0 byte,
+# huong (16, 17) tra frame hop le 0104040122022f1ace = 29.0C / 55.9% (CRC khop).
+# CON PHAT HIEN: truoc day bus = UART(2, ...) KHONG truyen tx/rx → RS485_TX/RX
+# chi la hang "trang tri" va bus luon chay mac dinh 17/16 (sai day).
+RS485_TX, RS485_RX = 16, 17   # UART2 — huong da do duoc phan hoi tu SHT20
 RS485_DE = 4                # chan DE/RE cua bo dich RS485 (MAX485)
 SLAVE_SHT20 = 1
 SLAVE_RELAY = 255
@@ -36,13 +49,21 @@ STATE_PATH = "/pumpvision_state.json"
 BOOT_MS = time.ticks_ms()
 
 # ---------- UART ----------
-# Gian REPL khoi UART0 truoc khi mo link — khong lam vay UART0 bi chiem
+# R21: UART(0) KHONG mo duoc tren MicroPython v1.29.0 (doan tren board that):
+# sau os.dupterm(None) van nang OSError (-259, ESP_ERR_INVALID_STATE) o dong 44
+# → main.py chet luc boot, board roi ve REPL → HMI nhan khong duoc ack/pong.
+# 5 bien de deu FAIL; rieng UART(1, tx=1, rx=3) (GPIO matrix) mo duoc, TX/RX
+# song song deu chay, read() buffer rong khong block (el_ms=0), rxbuf=1024 OK.
+# Vay: link dung UART(1) tren CHINH GPIO1/GPIO3 (khong doi day USB-C/CH340),
+# UART0 giao lai cho REPL.
 try:
     os.dupterm(None)
 except Exception:
     pass
-link = UART(0, baudrate=LINK_BAUD, bits=8, parity=None, stop=1)
-bus = UART(2, baudrate=RS485_BAUD, bits=8, parity=None, stop=1, timeout=10)
+link = UART(1, baudrate=LINK_BAUD, bits=8, parity=None, stop=1,
+            tx=1, rx=3, rxbuf=1024)
+bus = UART(2, baudrate=RS485_BAUD, bits=8, parity=None, stop=1, timeout=10,
+           tx=RS485_TX, rx=RS485_RX)
 de = Pin(RS485_DE, Pin.OUT, value=0)
 
 ctrl = pc.PumpController()
@@ -50,6 +71,10 @@ _rxbuf = b""
 _retry = []            # action ghi coil lỗi → thử lại ở chu kỳ sau
 _write_failed = set()  # kênh đang lỗi (chống spam alarm mỗi chu kỳ)
 _actual = {}          # M-1: trạng thái THỰC của coil (sau khi ghi thành công)
+_link_fail = False    # E-20: đang mất liên kết USB (chống spam alarm mỗi giây)
+_last_fw_err = None   # E-21: lỗi firmware khác Modbus (chống spam alarm)
+_last_bus_diag = None # E-33: chẩn đoán RS-485 gần nhất (chống spam alarm)
+_xact_note = ""       # E-33: what happened trong transaction vừa rồi
 
 
 # ---------- Modbus ----------
@@ -69,19 +94,40 @@ def _xact(req, resp_len):
             break
     de.on()
     time.sleep_ms(2)
+    # E-34: thoi gian day HET frame ra day (10 bit/byte + lech 2 ms).
+    tx_ms = 2 + (len(req) * 10 * 1000) // RS485_BAUD
     try:
         bus.write(req)
         # PHAI cho TX xong TRUOC khi ha DE: UART.write() MicroPython tra ve khi
         # du lieu dua vao bo dem (truyen bat dong bo) — ha DE som = frame bi cat
         # tren bus RS-485, slave khong nhan duoc -> timeout moi chu ky.
-        # UART.flush() (esp32): "Waits until all data has been sent" — docs MicroPython.
         if hasattr(bus, "flush"):
-            bus.flush()
-        else:
-            # Port khong co flush: do thoi gian theo baud (10 bit/byte + lech 2ms).
-            time.sleep_ms(2 + (len(req) * 10 * 1000) // RS485_BAUD)
+            # flush() co the cho TX xong (tuy port/firmware) — coi la loi ich,
+            # KHONG duoc tin tuyet doi (co port flush() chi xa RX hoac tra ve ngay).
+            try:
+                bus.flush()
+            except Exception:
+                pass
+        # Luon cho them thoi gian tinh theo baud cho CHAC: frame bi cat la
+        # nguyen nhan hang dau cua "khong nhan duoc byte nao".
+        time.sleep_ms(tx_ms)
     finally:
         de.off()                      # luon tha DE, ke ca write/flush loi
+    # E-34b: xa LOCAL ECHO. Bo RS-485 de /RE luon bat (hoac DE/RE khong noi
+    # chung) se doc lai CHINH frame minh vua gui:
+    #   · FC05 (response = echo cua request) ⇒ echo gia lam write_coil bao
+    #     THANH CONG du slave KHONG tra loi (mat kha nang phat hien loi relay).
+    #   · FC04 ⇒ echo lam CRC sai ⇒ bao nham "bus hong".
+    # Xa NGAY sau khi ha DE (khong cho): echo da nam san trong FIFO, con slave
+    # phai >= 3,5 char-time (~4 ms) moi tra loi ⇒ chua the co du lieu that.
+    # Dung any() (khong chan) de khong nuot byte tra loi som.
+    if hasattr(bus, "any"):
+        n = bus.any()
+        while n:
+            bus.read(n)
+            n = bus.any()
+    else:
+        bus.read()                    # port khong co any(): xa 1 lan
     buf = b""
     t0 = time.ticks_ms()
     while time.ticks_diff(time.ticks_ms(), t0) < MODBUS_TIMEOUT_MS:
@@ -103,11 +149,20 @@ def _xact(req, resp_len):
             else:
                 time.sleep_ms(2)
         code = buf[2] if len(buf) >= 3 else -1
-        err = mb.ModbusError("slave tra exception code %d" % code)
+        err = mb.ModbusError("slave tra exception code %d" % code, code=code)
         err.slave_error = True
         raise err
     time.sleep_ms(INTER_FRAME_MS)
-    return buf if len(buf) == resp_len else None
+    if len(buf) == resp_len:
+        return buf
+    # E-33: phân biệt "không có tiếng" với "có tiếng nhưng frame hỏng"
+    global _xact_note
+    if not buf:
+        _xact_note = ("khong nhan duoc byte nao — kiem tra day A/B (co bi dao), "
+                      "DE/RE noi GPIO4, nguon + GND chung cua cam bien")
+    else:
+        _xact_note = "nhan %d/%d byte (frame khong du — bus nhieu/cap dai)" % (len(buf), resp_len)
+    return None
 
 
 def read_sht20():
@@ -115,7 +170,7 @@ def read_sht20():
     req = mb.frame_read_input_registers(SLAVE_SHT20, SHT20_REG_START, 2)
     resp = _xact(req, 9)
     if resp is None:
-        raise mb.ModbusError("timeout doc SHT20")
+        raise mb.ModbusError("timeout doc SHT20: " + _xact_note)
     raw_t, raw_h = mb.parse_read_response(resp, SLAVE_SHT20)
     t, h = raw_t / 10.0, raw_h / 10.0
     if not (-40.0 <= t <= 125.0 and 0.0 <= h <= 100.0):
@@ -139,13 +194,44 @@ def poll_sensor():
     kích hoạt failsafe (không cắt bơm), chỉ báo alarm. Chỉ MẤT BUS thật
     (timeout) mới kích hoạt failsafe theo đặc tả.
     """
+    global _last_bus_diag
     try:
         t, h = read_sht20()
+        # B7: đọc OK ⇒ XOÁ cờ dedupe chẩn đoán, nếu không lỗi y hệt sau khi
+        # đã hồi phục sẽ bị im lặng vĩnh viễn.
+        _last_bus_diag = None
         return ctrl.on_sensor_ok(t, h)
-    except Exception as e:
+    except mb.ModbusError as e:
+        # E-21: CHI bat loi Modbus (bus thieu/corrupt/exception frame). Loi
+        # khac (ValueError, KeyError...) la BUG firmware — phai noi ra, khong
+        # duoc nuot roi coi nhu "mat cam bien".
         if getattr(e, "slave_error", False):
-            ctrl.note_slave_error("Cam bien SHT20 tra loi loi: %s" % e)
+            # E-33: giải thích mã exception — phân biệt "sai FC/địa chỉ thanh
+            # ghi" (bus KHỎE, chỉ hỏi sai) với mất bus thật.
+            hint = {1: " — FC sai (nhieu SHT20 Modbus dung FC03/holding register, firmware hoi FC04)",
+                    2: " — sai dia chi thanh ghi (firmware dang doc 0x0001)",
+                    3: " — gia tri trong thanh ghi sai",
+                    6: " — slave ban (SLAVE_BUSY), thu lai sau"}.get(
+                getattr(e, "code", None), "")
+            ctrl.note_slave_error("Cam bien SHT20 tra exception code %s%s"
+                                  % (getattr(e, "code", "?"), hint))
             return []
+        # E-33: báo CHẨN ĐOÁN cụ thể (0 byte? frame hỏng?) — dedupe theo message
+        # để không spam alarm mỗi chu kỳ 1 s.
+        msg = str(e)
+        if "CRC" in msg or "frame qua ngan" in msg:
+            hint = (" — kiem tra baud 9600 8N1, day A/B, nhieu bus / cap dai; "
+                    "neu doc lai dung frame minh vua gui thi bo RS-485 dang de /RE luon bat")
+        elif "sai slave id" in msg:
+            hint = " — dia chi slave khac 1 (firmware hoi slave 1)"
+        elif "sai function code" in msg:
+            hint = " — slave khong ho tro FC04"
+        else:
+            hint = ""
+        out = "RS-485 doc cam bien that bai: %s%s" % (msg, hint)
+        if out != _last_bus_diag:
+            _last_bus_diag = out
+            ctrl.push_alarm("BUS_DIAG", out)
         return ctrl.on_sensor_timeout()
 
 
@@ -186,7 +272,10 @@ def apply_actions(actions):
             else:
                 ctrl.pump_state = bool(on)
             _actual[channel] = bool(on)      # M-1: trạng thái thực đã xác nhận
-        except Exception:
+        except (mb.ModbusError, OSError):    # B19: chỉ lỗi bus/OS
+            # B19: lỗi KHÁC (ValueError/AttributeError = bug firmware) không
+            # được coi là "ghi coil lỗi" rồi nuốt — để nổi lên cho vòng lặp
+            # báo FW_ERROR (nếu không, bug lặp vô hạn mà không ai biết).
             # E-03b: ghi OFF thất bại ⇒ relay CÒN ON nhưng state nói "đã tắt"
             # ⇒ trả state về ON (đúng thực tế) + GIU retry để tắt lại ở chu
             # kỳ sau. (Ghi ON thất bại: state giữ là lệnh đang chờ, retry tiếp
@@ -252,17 +341,48 @@ def save_state():
             json.dump(st, f)
         # E-16: os.replace ghi đè atomically — os.rename FAIL nếu file đích
         # đã tồn tại (FatFS) ⇒ mất state (mất khoá E-STOP + ngưỡng).
-        os.replace(STATE_PATH + ".tmp", STATE_PATH)
-    except Exception:
-        pass
+        # E-35: firmware MicroPython CŨ không có os.replace ⇒ ghi state thất
+        # bại mỗi lần (mất khoá E-STOP sau reboot). Fallback: xoá rồi rename.
+        try:
+            os.replace(STATE_PATH + ".tmp", STATE_PATH)
+        except AttributeError:
+            try:
+                os.remove(STATE_PATH)
+            except Exception:
+                pass
+            os.rename(STATE_PATH + ".tmp", STATE_PATH)
+    except Exception as e:
+        # E-22: nuot loi ghi flash ⇒ mat khoa E-STOP/nguong/seq ma khong ai
+        # biet (boot sau chay lai trang thai cu). Bao alarm de con dau vet.
+        try:
+            ctrl.push_alarm("FLASH_WRITE_FAIL",
+                            "Khong luu duoc trang thai xuong flash: %s" % e)
+        except Exception:
+            pass
 
 
 # ---------- Link JSON-lines ----------
 def send(obj):
+    """Gui 1 dong JSON ve HMI. Tra ve True/False de caller biet.
+
+    E-20: truoc day nuot moi loi ⇒ USB dut/buffer day lam telemetry, ACK va
+    CA alarm mat trang ma khong ai biet. Nay bao alarm MOT lan cho moi giai
+    doan mat lien ket (alarm nam trong hang doi, gui lai duoc khi link hoi phuc).
+    """
+    global _link_fail
     try:
         link.write(json.dumps(obj) + "\n")
+        _link_fail = False
+        return True
     except Exception:
-        pass
+        if not _link_fail:
+            _link_fail = True
+            try:
+                ctrl.push_alarm("LINK_WRITE_FAIL",
+                                "Khong gui duoc du lieu ve HMI (USB/buffer) — kiem tra cap")
+            except Exception:
+                pass
+        return False
 
 
 def send_telemetry():
@@ -278,10 +398,21 @@ def send_telemetry():
 
 
 def flush_events():
-    for a in ctrl.pop_alarms():
-        send({"type": "event", "etype": a["type"], "message": a["message"],
-              "t": a.get("temperature"),
-              "uptime": time.ticks_diff(time.ticks_ms(), BOOT_MS)})
+    """Gui alarm len HMI.
+
+    B3: truoc day pop() pha huy hang doi roi moi send() ⇒ send loi (USB dut)
+    thi FIRE/EMERGENCY/COMM_LOSS phat sinh trong cua so do MAT VINH VIEN.
+    Nay: gui loi ⇒ dua alarm tro lai hang doi (gui lai khi link hoi phuc).
+    """
+    pending = ctrl.pop_alarms()
+    lost = []
+    for a in pending:
+        if not send({"type": "event", "etype": a["type"], "message": a["message"],
+                     "t": a.get("temperature"),
+                     "uptime": time.ticks_diff(time.ticks_ms(), BOOT_MS)}):
+            lost.append(a)
+    if lost:
+        ctrl.requeue_alarms(lost)
 
 
 def _handle_cmd(m):
@@ -296,8 +427,17 @@ def _handle_cmd(m):
               "estop": ctrl.emergency_lock, "failsafe": ctrl.failsafe})
         return
     before_state = (ctrl.emergency_lock, ctrl.mode, ctrl.last_seq)
+    lock_before = ctrl.emergency_lock
     ack = ctrl.apply_remote_command(m, now_ms)
     apply_actions(ctrl.drain_actions())
+    # E-23: Clear E-STOP chi duoc coi la XONG khi tai THUC SU da tat. Neu lenh
+    # ghi coil that bai, tai van ON ma pump_core da mo khoa ⇒ ERP/HMI tuong da
+    # giai phong va cho phep dieu khien lai ⇒ phai BAT LAI KHOA + bao alarm.
+    if lock_before and not ctrl.emergency_lock and \
+            (_state_of(pc.CH_FAN) or _state_of(pc.CH_PUMP)):
+        ctrl.emergency_lock = True
+        ctrl.push_alarm("CLEAR_ESTOP_FAIL",
+                        "Khong tat duoc tai de go khoa E-STOP — da bat lai khoa, kiem tra relay")
     flush_events()
     send({"type": "ack", "seq": m.get("seq"),
           "accepted": ack["accepted"], "result": ack["result"],
@@ -306,7 +446,9 @@ def _handle_cmd(m):
           # OFF hỏng thì state đã được trả về ON (không báo "đã tắt" khi
           # relay còn ON).
           "fan": _state_of(pc.CH_FAN), "pump": _state_of(pc.CH_PUMP), "mode": ack["mode"],
-          "estop": ack["emergency_lock"], "failsafe": ack["failsafe"]})
+          # E-23: estop lấy giá trị SỐNG — nếu Clear thất bại và khoá được bật
+          # lại thì ACK phải báo estop=true (không báo "đã gỡ khoá" trên giấy).
+          "estop": ctrl.emergency_lock, "failsafe": ack["failsafe"]})
     # N-R: chỉ ghi flash khi state THẬT SỰ đổi — trước đây save_state() mỗi
     # lệnh (kể cả lệnh REJECTED, nội dung file y hệt) ⇒ mòn flash.
     if (ctrl.emergency_lock, ctrl.mode, ctrl.last_seq) != before_state:
@@ -372,10 +514,16 @@ def boot():
         ctrl.update_settings(s.get("fan_on", 32.0), s.get("fan_off", 30.0),
                              s.get("pump_on", 50.0), s.get("pump_off", 42.0),
                              s.get("max_timeouts", pc.MAX_TIMEOUTS))
-        if st.get("mode") in (pc.MODE_AUTO, pc.MODE_MANUAL):
-            ctrl.set_mode(st["mode"])
+        # B2: đặt KHOÁ E-STOP TRƯỚC khi set mode — nếu không, file state có
+        # (mode=AUTO, emergency_lock=True) sẽ qua mặt interlock _mode_ok()
+        # ⇒ board boot vào AUTO + đang khoá; gỡ khoá mà lệnh Clear không kèm
+        # mode_cmd thì bơm tự phun lại theo hysteresis.
         if st.get("emergency_lock"):
             ctrl.emergency_lock = True
+        if st.get("mode") in (pc.MODE_AUTO, pc.MODE_MANUAL):
+            ctrl.set_mode(st["mode"])
+        if ctrl.emergency_lock and ctrl.mode != pc.MODE_MANUAL:
+            ctrl.mode = pc.MODE_MANUAL
         # E-13: validate last_seq — file state hỏng (seq > 1e15, vd bản ghi
         # cũ của firmware: Date.now()*1e6 ≈ 1.7e18) sẽ khoá VĨNH VIỄN mọi
         # lệnh mới với thông điệp "seq đã dùng" ⇒ phải xoá file tay mới
@@ -413,7 +561,16 @@ while True:
             last_poll = now
             try:
                 actions = poll_sensor()
-            except Exception:
+            except Exception as e:
+                # E-21: loi KHONG phai Modbus = bug firmware. Van ha an toan
+                # (coi nhu mat cam bien) nhung phai bao ro, khong im lang.
+                msg = "Loi firmware khi doc cam bien: %s" % e
+                if msg != _last_fw_err:
+                    _last_fw_err = msg
+                    try:
+                        ctrl.push_alarm("FW_ERROR", msg)
+                    except Exception:
+                        pass
                 actions = ctrl.on_sensor_timeout()
             apply_actions(actions)
             flush_events()
@@ -422,6 +579,7 @@ while True:
             last_tele = now
             send_telemetry()
         err_streak = 0
+        _last_fw_err = None      # B7: vòng lặp chạy sạch ⇒ cho phép alarm lại
     except Exception as e:
         err_streak += 1
         if err_streak >= 5:

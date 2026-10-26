@@ -405,7 +405,7 @@ dktm/
 
 > **Lõi logic (`pump_core.py`) chạy trên cả CPython lẫn MicroPython** — cho phép
 > test đầy đủ trên máy (`python -m unittest discover -s tests`) và chạy y hệt trên board.
-> Bộ test hiện có **140/140 PASS** (`pump_core`, `modbus_rtu`, tích hợp HMI, và `esp32/main.py`
+> Bộ test hiện có **240/240 PASS** (`pump_core`, `modbus_rtu`, tích hợp HMI, và `esp32/main.py`
 > nạp với module `machine` giả để kiểm tra ghi coil/flash mà không cần board thật).
 
 > Dự án cố ý **không dùng thư viện build**: Python chạy được ngay, HTML mở được ngay.
