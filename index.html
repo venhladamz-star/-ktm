@@ -28,10 +28,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 input,select{font-family:inherit}
 .mono{font-family:'JetBrains Mono','Consolas',monospace}
 
-/* ==================== BOOT LOADER (Uiverse.io by anand_4957) ==================== */
-#boot-loader{position:fixed;inset:0;background:var(--bg);z-index:10000;animation:bootFailsafe 0s linear 6s forwards}
-#boot-loader.done{opacity:0;transition:opacity .45s;pointer-events:none}
-@keyframes bootFailsafe{to{opacity:0;visibility:hidden}}
 /* From Uiverse.io by anand_4957 */
 .loader {
   position: absolute;
@@ -994,18 +990,6 @@ tbody tr:last-child td{border-bottom:none}
 
 <!-- ==================== BOOT LOADER (Uiverse.io by anand_4957) ==================== -->
 
-<script>
-/* Boot loader: hiện đúng 3s rồi fade + gỡ khỏi DOM.
-   CSS failsafe 6s dự phòng nếu JS lỗi. */
-(function () {
-  var el = document.getElementById('boot-loader');
-  if (!el) return;
-  setTimeout(function () {
-    el.classList.add('done');
-    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 500);
-  }, 3000);
-})();
-</script>
 
 <!-- ==================== DEVICE PICKER ==================== -->
 <div id="picker" class="hidden">
@@ -2157,13 +2141,15 @@ function renderAssets() {
   // đóng băng toàn bộ phần còn lại (các ô thiếu hiện "--").
   // E12: c.t/c.h có thể undefined (không có field) — coi như null.
   var t = c.t == null ? null : c.t, h = c.h == null ? null : c.h;
-  if (t === null && h === null) return;
+  // N1 (R23): KHÔNG early-return khi cả hai null — mất cảm biến (B6 gửi
+  // null) sẽ đóng băng bảng với số CŨ; từng ô tự hiện "--" bên dưới.
+  // (Điều kiện early-return "cả hai null" của bản cũ đã bị xoá hẳn.)
   var th = state.settings || {};   // N6: ngưỡng ĐANG CHẠY từ /settings
   var fanOn = num(th.fan_on, 32), fanOff = num(th.fan_off, 30), pumpOn = num(th.pump_on, 50), pumpOff = num(th.pump_off, 42);
   var items = [
     { name: 'Nhiệt độ (SHT20)', val: (t === null ? '--' : t.toFixed(1)) + ' °C', pct: (t === null ? 0 : Math.min(100, (t/60)*100)),
       cls: t === null ? '' : t >= pumpOn ? 'danger' : t >= fanOn ? 'warning' : 'green' }, 
-    { name: 'Độ ẩm (SHT20)', val: (c.h === null ? '--' : c.h.toFixed(1)) + ' %', pct: (c.h === null ? 0 : Math.min(100, c.h)), cls: '' },
+    { name: 'Độ ẩm (SHT20)', val: (h === null ? '--' : h.toFixed(1)) + ' %', pct: (h === null ? 0 : Math.min(100, h)), cls: '' },
     { name: 'Quạt 12V (CH2)', val: c.fan ? 'Đang chạy' : 'Dừng', pct: c.fan ? 100 : 5, cls: c.fan?'green':'' },
     { name: 'Bơm MB370 (CH1)', val: c.pump ? 'Đang phun' : 'Dừng', pct: c.pump ? 100 : 5, cls: c.pump?'danger':'' }
   ];
@@ -2901,7 +2887,7 @@ function writeControl(fields, opts) {
       // gây lockout).
       showToast('warning', 'Lệnh bị từ chối',
         (txCur && txCur.emergency_cmd === true)
-          ? 'Slot /control vẫn giữ lệnh E-STOP — HMI chưa xác nhận khoá, không thể ghi đè.'
+          ? 'Slot /control vẫn giữ lệnh E-STOP — HMI chưa xác nhận khoá, không thể ghi đè. Bấm E-STOP để gửi lại, chờ xác nhận rồi Giải phóng.'
           : 'Có lệnh khác đang chờ HMI — không ghi đè, thử lại sau giây lát.');
       return;
     }
@@ -3200,8 +3186,8 @@ function startRealtime() {
         // quyền điều khiển. Lấy đúng trạng thái thiết bị; lúc đang GỬI thì
         // dùng cờ "estopUnacked" để hiện trạng thái chờ.
         emergency_lock: !!v.emergency_lock,
-        last_command_sequence: num(v.last_command_sequence, 0),
-        last_command_result: String(v.last_command_result || '')
+        last_command_sequence: num(v.last_command_sequence, 0)
+        // R24#14: last_command_result chỉ được GHI mà không ai đọc — đã xoá.
       };
       // H-Skew: ước lượng lệch đồng hồ trình duyệt ↔ HMI từ timestamp của
       // /system_status ⇒ bù vào issued_at_ms (lệnh không còn bị HMI từ chối
@@ -3363,7 +3349,10 @@ function startRealtime() {
       if (!alarmSeen[item.key]) {
         alarmSeen[item.key] = true;
         state.seenKeys[item.key] = true;
-        toastAlarm(item);              // chỉ báo cáo phát sinh MỚI
+        // R24#8: chỉ TOAST sau khi baseline /alarms xong — SDK không đảm bảo
+        // child_added về sau snapshot value; thiếu gate ⇒ mở trang là toast
+        // hàng loạt cảnh báo CŨ.
+        if (state.alarmsBaselineReady) toastAlarm(item);
       }
       trimSeenKeys();                 // M-23r: cắt seenKeys/alarmSeen
       renderAlarmsNow();

@@ -21,7 +21,6 @@
 
 import os
 import time
-import machine
 from machine import UART, Pin
 import ujson as json
 
@@ -75,6 +74,8 @@ _link_fail = False    # E-20: đang mất liên kết USB (chống spam alarm m�
 _last_fw_err = None   # E-21: lỗi firmware khác Modbus (chống spam alarm)
 _last_bus_diag = None # E-33: chẩn đoán RS-485 gần nhất (chống spam alarm)
 _xact_note = ""       # E-33: what happened trong transaction vừa rồi
+_last_link_err = None # N2: lỗi XỬ LÝ LỆNH từ HMI (chống spam alarm mỗi frame)
+_last_loop_err = None # R24#2: lỗi VÒNG LẶP ngoài (chống spam alarm mỗi chu kỳ)
 
 
 # ---------- Modbus ----------
@@ -485,7 +486,7 @@ def handle_link(m):
 
 def pump_link():
     """Doc toan bo du lieu da nhan, xu ly tung day JSON day du."""
-    global _rxbuf
+    global _rxbuf, _last_link_err
     got = link.read()
     if not got:
         return
@@ -500,20 +501,40 @@ def pump_link():
             continue
         try:
             m = json.loads(line)
-            if isinstance(m, dict):
-                handle_link(m)
         except Exception:
-            pass  # JSON hong — bo qua, khong crash
+            continue            # JSON hong — bo qua, khong crash
+        if not isinstance(m, dict):
+            continue
+        try:
+            handle_link(m)
+        except Exception as e:
+            # N2 (R23): loi khi XU LY LENH khong duoc nuot im lang. Truoc day
+            # `except Exception: pass` bao CA handler ⇒ lenh vo khong ACK,
+            # khong alarm, state RAM co the da doi truoc khi vo ⇒ telemetry
+            # bao sai. Chi bao MOT lan cho moi thong bao loi (chong spam).
+            msg = "Loi xu ly lenh tu HMI: %s" % e
+            if msg != _last_link_err:
+                _last_link_err = msg
+                try:
+                    ctrl.push_alarm("FW_ERROR", msg)
+                except Exception:
+                    pass
+        else:
+            _last_link_err = None   # B7: chay sach tro lai ⇒ cho phep alarm lai
 
 
 # ---------- BOOT ----------
 def boot():
     st = load_state()
-    if st:
-        s = st.get("settings") or {}
-        ctrl.update_settings(s.get("fan_on", 32.0), s.get("fan_off", 30.0),
-                             s.get("pump_on", 50.0), s.get("pump_off", 42.0),
-                             s.get("max_timeouts", pc.MAX_TIMEOUTS))
+    # R24#3: state phải là dict ĐÚNG HÌNH DẠNG — JSON hợp lệ nhưng sai kiểu
+    # (sửa tay / firmware cũ) trước đây làm st.get() ném AttributeError ngay
+    # tại module level ⇒ board chết về REPL, mất toàn bộ điều khiển.
+    if isinstance(st, dict):
+        s = st.get("settings")
+        if isinstance(s, dict):
+            ctrl.update_settings(s.get("fan_on", 32.0), s.get("fan_off", 30.0),
+                                 s.get("pump_on", 50.0), s.get("pump_off", 42.0),
+                                 s.get("max_timeouts", pc.MAX_TIMEOUTS))
         # B2: đặt KHOÁ E-STOP TRƯỚC khi set mode — nếu không, file state có
         # (mode=AUTO, emergency_lock=True) sẽ qua mặt interlock _mode_ok()
         # ⇒ board boot vào AUTO + đang khoá; gỡ khoá mà lệnh Clear không kèm
@@ -545,7 +566,15 @@ def boot():
 
 
 # ---------- VONG LAP CHINH ----------
-boot()
+try:
+    boot()
+except Exception as e:
+    # R24#3: boot KHÔNG được giết firmware — vòng lặp vẫn phải chạy với mặc
+    # định an toàn; báo alarm để có dấu vết điều tra.
+    try:
+        ctrl.push_alarm("FW_ERROR", "Loi boot tu state: %s" % e)
+    except Exception:
+        pass
 last_poll = 0
 last_tele = 0
 err_streak = 0
@@ -561,6 +590,10 @@ while True:
             last_poll = now
             try:
                 actions = poll_sensor()
+                # R24#1: chỉ RE-ARM cảnh báo khi poll THÀNH CÔNG — trước đây
+                # reset vô điều kiện ở cuối vòng (kể cả vòng vừa nuốt lỗi
+                # poll) ⇒ FW_ERROR bắn lại MỖI chu kỳ (~86k PUT/ngày).
+                _last_fw_err = None
             except Exception as e:
                 # E-21: loi KHONG phai Modbus = bug firmware. Van ha an toan
                 # (coi nhu mat cam bien) nhung phai bao ro, khong im lang.
@@ -579,9 +612,22 @@ while True:
             last_tele = now
             send_telemetry()
         err_streak = 0
-        _last_fw_err = None      # B7: vòng lặp chạy sạch ⇒ cho phép alarm lại
+        # R24#2: vòng SẠCH ⇒ re-arm cảnh báo lỗi vòng lặp (không khoá vĩnh
+        # viễn sau lần lỗi đầu).
+        _last_loop_err = None
     except Exception as e:
+        # R24#2: lỗi vòng lặp trước đây BỊ NUỐT IM LẶNG (không alarm, `e`
+        # không dùng) ⇒ safe_off cắt tải mà không ai biết vì sao. Nay báo
+        # FW_ERROR (dedupe theo thông báo — chống spam), vẫn hạ tải khi lỗi
+        # lặp ≥ 5 vòng liên tiếp.
         err_streak += 1
+        msg = "Loi vong lap firmware: %s" % e
+        if msg != _last_loop_err:
+            _last_loop_err = msg
+            try:
+                ctrl.push_alarm("FW_ERROR", msg)
+            except Exception:
+                pass
         if err_streak >= 5:
             try:
                 safe_off("LOOP-ERROR")

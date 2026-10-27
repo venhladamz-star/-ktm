@@ -326,7 +326,10 @@ class PumpController(object):
     def requeue_alarms(self, items, cap=20):
         """B3: gửi alarm thất bại ⇒ đưa trở lại hàng đợi (giới hạn cap
         để không phình bộ nhớ khi link chết dài ngày)."""
-        self._alarms = list(items)[:cap] + self._alarms
+        # N4 (R23): giữ cap alarm MỚI NHẤT của batch lỗi (items xếp cũ→mới
+        # từ pop_alarms) — trước đây [:cap] giữ CŨ NHẤT ⇒ backlog > cap thì
+        # alarm an toàn mới nhất bị bỏ.
+        self._alarms = list(items)[-cap:] + self._alarms
 
     # ---------- relay ghi lỗi (main.py báo cáo khi write Modbus thất bại) ----------
     def note_write_fail(self, channel):

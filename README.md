@@ -5,7 +5,7 @@
 **ESP32 là "bộ não" của hệ thống** · Modbus RTU RS-485 · Web ERP có mô hình 3D Digital Twin · chạy được trong hạn mức Firebase free tier
 
 <p align="center">
-<a href="tests/"><img src="https://img.shields.io/badge/tests-240%2F240%20PASS-brightgreen?style=flat-square" alt="240/240 tests PASS"></a>
+<a href="tests/"><img src="https://img.shields.io/badge/tests-274%2F274%20PASS-brightgreen?style=flat-square" alt="274/274 tests PASS"></a>
 <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.x-3776AB?style=flat-square" alt="Python 3"></a>
 <a href="https://micropython.org/"><img src="https://img.shields.io/badge/ESP32-MicroPython-ff7043?style=flat-square" alt="ESP32 MicroPython"></a>
 <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-free%20tier-ffca28?style=flat-square" alt="Firebase free tier"></a>
@@ -90,7 +90,7 @@ Toàn bộ logic an toàn (hysteresis, failsafe, E-STOP, chống chạy lệnh) 
 <li>SCADA/HMI desktop với <b>sơ đồ công nghệ động</b> (synoptic mimic view)</li>
 <li>Lịch sử, cảnh báo, xuất CSV/JSON, cấu hình 4 ngưỡng ngay trên web</li>
 <li>Chống XSS (<code>escapeHTML</code>/<code>num</code>) và CSV injection</li>
-<li><b>240 test hồi quy</b> chạy được ngay trên máy</li>
+<li><b>274 test hồi quy</b> chạy được ngay trên máy</li>
 </ul>
 
 </td>
@@ -267,7 +267,7 @@ Mô hình lắp trong tủ DIY (hộp trắng) để mô phỏng phòng máy —
 
 ## ✅ Kiểm chứng
 
-**240/240 test hồi quy PASS** (`python -m unittest discover -s tests`) — chạy được ngay trên máy, không cần board thật.
+**274/274 test hồi quy PASS** (`python -m unittest discover -s tests`) — chạy được ngay trên máy, không cần board thật.
 
 | Nhóm test | Phạm vi |
 |---|---|
@@ -348,7 +348,7 @@ dktm/
 │   ├── modbus_rtu.py            # Modbus RTU master thuần (CRC16, FC04/FC05)
 │   ├── pump_core.py             # Lõi logic: hysteresis · failsafe · E-STOP · chống replay
 │   └── README.md                # Hướng dẫn flash + hợp đồng serial JSON
-├── tests/                       # ✅ 240 test hồi quy (unittest, chạy được ngay trên máy)
+├── tests/                       # ✅ 274 test hồi quy (unittest, chạy được ngay trên máy)
 ├── assets/                      # 🧊 Bundle 3D Digital Twin (server-room-twin.umd.js + css)
 ├── docs/                        # 📘 Tài liệu chi tiết + ảnh minh hoạ
 │   ├── HDSD.md                  # Hướng dẫn kỹ thuật & triển khai
@@ -370,7 +370,7 @@ dktm/
 | Ứng dụng desktop | Python · CustomTkinter · pyserial · requests (1 file duy nhất `HMI.py`) |
 | Cloud | Firebase Realtime Database — REST API (HMI) + JavaScript SDK (web) |
 | Web | HTML · CSS · JavaScript thuần · Chart.js · bundle UMD React + three.js (Digital Twin) |
-| Kiểm thử | `unittest` — 240 test, không phụ thuộc thiết bị thật |
+| Kiểm thử | `unittest` — 274 test, không phụ thuộc thiết bị thật |
 
 ---
 

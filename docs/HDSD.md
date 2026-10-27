@@ -333,9 +333,7 @@ chính là trang chủ.
 | `LINK_BAUD` | `115200` | Cầu serial USB-C laptop ↔ ESP32 (JSON-lines) |
 | `FAN_ON / FAN_OFF` | `32.0 / 30.0` | Ngưỡng hysteresis quạt (°C) — validate tại HMI rồi đẩy xuống ESP32 |
 | `PUMP_ON / PUMP_OFF` | `50.0 / 42.0` | Ngưỡng hysteresis bơm (°C) |
-| `FB_PUSH_SEC / HISTORY_PUSH_SEC` | `5.0` | Chu kỳ đẩy `/history` (s); `/system_status` dùng `POLL_INTERVAL` = 1 s |
-| `CONTROL_POLL_SEC` | `0.3` | Chu kỳ poll `/control` (s) |
-| `SETTINGS_POLL_SEC` | `3.0` | Chu kỳ poll `/settings` (s) |
+| `LIVE_* / IDLE_*_SEC` | `2/1/5/10` và `30/10/60/120` | Nhịp Firebase do `_quota_intervals()` chọn: NHANH khi có ERP mở, TIẾT KIỆM khi không (giữ quota free tier 24/7). Các alias cũ `FB_PUSH_SEC / CLOUD_PUSH_SEC / HISTORY_PUSH_SEC / CONTROL_POLL_SEC / SETTINGS_POLL_SEC` đã xoá (R24 — không nơi nào đọc) |
 | `CONTROL_MAX_AGE_SEC` | `30.0` | Lệnh cũ hơn bị bỏ (chống replay — HMI kiểm tra trước khi chuyển tiếp) |
 | `CLOCK_SKEW_TOL_MS` | `30000` | Dung sai lệch giờ HMI ↔ trình duyệt |
 | `REOPEN_SEC` | `3.0` | Thử mở lại cổng serial sau khi mất |
@@ -405,7 +403,7 @@ dktm/
 
 > **Lõi logic (`pump_core.py`) chạy trên cả CPython lẫn MicroPython** — cho phép
 > test đầy đủ trên máy (`python -m unittest discover -s tests`) và chạy y hệt trên board.
-> Bộ test hiện có **240/240 PASS** (`pump_core`, `modbus_rtu`, tích hợp HMI, và `esp32/main.py`
+> Bộ test hiện có **274/274 PASS** (`pump_core`, `modbus_rtu`, tích hợp HMI, và `esp32/main.py`
 > nạp với module `machine` giả để kiểm tra ghi coil/flash mà không cần board thật).
 
 > Dự án cố ý **không dùng thư viện build**: Python chạy được ngay, HTML mở được ngay.
